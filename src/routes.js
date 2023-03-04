@@ -9,20 +9,24 @@ import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
+import ReportPage from './pages/ReportPage';
+import SalePage from './pages/SalePage';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
   const routes = useRoutes([
     {
-      path: '/dashboard',
+      // path: '/dashboard',
       element: <DashboardLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: 'app', element: <DashboardAppPage /> },
-        { path: 'user', element: <UserPage /> },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'blog', element: <BlogPage /> },
+        // { element: <Navigate to="/dashboard/app" />, index: true },
+        { path: 'panel', element: <DashboardAppPage/>},
+        { path: 'usuarios', element: <UserPage /> },
+        { path: 'terrenos', element: <ProductsPage /> },
+        { path: 'clientes', element: <BlogPage /> },
+        { path: 'ventas', element: <SalePage /> },
+        { path: 'reportes', element: <ReportPage />},
       ],
     },
     {
