@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 // @mui
 import { styled } from '@mui/material/styles';
 //
+import Cookies from 'universal-cookie';
+import jwtDecode from 'jwt-decode';
 import Header from './header';
 import Nav from './nav';
+import Loader from '../../components/common/Loader';
+
+
 
 // ----------------------------------------------------------------------
 
@@ -29,21 +34,26 @@ const Main = styled('div')(({ theme }) => ({
     paddingRight: theme.spacing(2),
   },
 }));
-
 // ----------------------------------------------------------------------
 
+
+
 export default function DashboardLayout() {
+  const cookies = new Cookies()
+  const token = cookies.get('jwt');
+  const userInfo = jwtDecode(token);
   const [open, setOpen] = useState(false);
+
+
+  if(!token) { return (<Navigate to={'/login'} />); }
 
   return (
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
-
-      <Nav openNav={open} onCloseNav={() => setOpen(false)} />
-
+      <Nav openNav={open} onCloseNav={() => setOpen(false)} userInfo={userInfo}/>
       <Main>
         <Outlet />
       </Main>
-    </StyledRoot>
-  );
+    </StyledRoot> 
+  )
 }

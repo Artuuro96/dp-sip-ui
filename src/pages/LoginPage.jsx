@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,6 +12,11 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { ThemeProvider } from '@mui/material/styles';
+import Cookies from 'universal-cookie';
+import jwtDecode from 'jwt-decode';
+import AlertMessage from '../components/common/AlertMessage';
+import { AcmaClient } from '../api/AcmaClient';
+import Loader from '../components/common/Loader';
 
 function Copyright(props) {
   return (
@@ -25,17 +32,49 @@ function Copyright(props) {
 }
 
 export default function SignIn() {
-  const handleSubmit = (event) => {
+  const cookies = new Cookies();
+  const [loading, setLoading] = useState(false)
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const [alertProps, setAlertProps] = useState({
+    show: false
+  })
+
+
+
+  const handleSubmit = async (event) => {
+    const acmaClient = new AcmaClient();
+    let response;
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('user'),
-      password: data.get('password'),
-    });
+    setLoading(true);
+    try {
+      response = await acmaClient.login(username, password);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      setAlertProps({
+        message: 'Usuario o constraseña incorrectos, intente de nuevo',
+        type: 'warning',
+        handleClose: () => setAlertProps({ show: false })
+      });
+    }
+    const decoded = jwtDecode(response?.accessToken);
+    const refreshDecoded = jwtDecode(response?.refreshToken);
+    cookies.set('jwt', response?.accessToken, {
+      expires: new Date(decoded.exp * 1000),
+    })
+    cookies.set('refresh_jwt', response?.refreshToken, {
+      expires: new Date(refreshDecoded.exp * 1000),
+    })
+    navigate('/panel', { replace: true });
   };
 
   return (
     <ThemeProvider>
+      <Loader loading={loading} />
+      <AlertMessage alertProps={alertProps}/>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Card sx={{ marginTop: 30 }} >
@@ -51,21 +90,23 @@ export default function SignIn() {
             <Typography component="h1" variant="h5" sx={{ m: 0 }}>
               <b>Iniciar Sesión</b>
             </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ m: 3, mt: 2 }}>
+            <Box component="form" noValidate sx={{ m: 3, mt: 2 }}>
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                id="user"
+                onChange={ (e) => setUsername(e.target.value) }
+                id="username"
                 label="Usuario"
-                name="user"
-                autoComplete="user"
+                name="username"
+                autoComplete="username"
                 autoFocus
               />
               <TextField
                 margin="normal"
                 required
                 fullWidth
+                onChange={ (e) => setPassword(e.target.value) }
                 name="password"
                 label="Constraseña"
                 type="password"
@@ -77,7 +118,7 @@ export default function SignIn() {
                 fullWidth
                 variant="contained"
                 sx= {{ mt: 3, mb: 2 }}
-                href="/panel"
+                onClick={handleSubmit}
               >
                 Iniciar
               </Button>
