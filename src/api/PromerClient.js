@@ -5,7 +5,7 @@ export class PromerClient {
   
   constructor() {
     this.axios = axios.create({
-      baseURL: 'http://localhost:3001',
+      baseURL: process.env.PROMER_BASE_URL || 'http://locahost:3000/api/v1',
     });
   }
 }

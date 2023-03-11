@@ -11,7 +11,7 @@ export class AcmaClient {
     this.cookies = new Cookies();
     const token = this.cookies.get('jwt')
     this.axios = axios.create({
-      baseURL: 'http://localhost/api/v1',
+      baseURL: process.env.ACMA_BASE_URL || 'http://locahost/api/v1',
       headers: { 'Authorization': `Bearer ${token}`}
     });
   }

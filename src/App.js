@@ -7,10 +7,10 @@ import ThemeProvider from './theme';
 // components
 import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
-
 // ----------------------------------------------------------------------
 
 export default function App() {
+  console.log(process.env.ACMA_BASE_URL)
   return (
     <HelmetProvider>
       <BrowserRouter>
