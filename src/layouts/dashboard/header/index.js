@@ -9,8 +9,6 @@ import Iconify from '../../../components/iconify';
 //
 import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
-import LanguagePopover from './LanguagePopover';
-import NotificationsPopover from './NotificationsPopover';
 
 // ----------------------------------------------------------------------
 
@@ -40,9 +38,10 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 
 Header.propTypes = {
   onOpenNav: PropTypes.func,
+  userInfo: PropTypes.object,
 };
 
-export default function Header({ onOpenNav }) {
+export default function Header({ onOpenNav, userInfo }) {
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -68,9 +67,7 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          <LanguagePopover />
-          <NotificationsPopover />
-          <AccountPopover />
+          <AccountPopover userInfo={userInfo}/>
         </Stack>
       </StyledToolbar>
     </StyledRoot>

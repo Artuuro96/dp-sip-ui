@@ -71,9 +71,13 @@ export default function SignIn() {
     navigate('/panel', { replace: true });
   };
 
+  if(loading) {
+    return (
+      <Loader/>
+    );
+  }
   return (
     <ThemeProvider>
-      <Loader loading={loading} />
       <AlertMessage alertProps={alertProps}/>
       <Container component="main" maxWidth="xs">
         <CssBaseline />

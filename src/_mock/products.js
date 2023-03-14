@@ -1,57 +1,119 @@
-import { faker } from '@faker-js/faker';
-import { sample } from 'lodash';
-
-// ----------------------------------------------------------------------
-
-const PRODUCT_NAME = [
-  'Nike Air Force 1 NDESTRUKT',
-  'Nike Space Hippie 04',
-  'Nike Air Zoom Pegasus 37 A.I.R. Chaz Bear',
-  'Nike Blazer Low 77 Vintage',
-  'Nike ZoomX SuperRep Surge',
-  'Zoom Freak 2',
-  'Nike Air Max Zephyr',
-  'Jordan Delta',
-  'Air Jordan XXXV PF',
-  'Nike Waffle Racer Crater',
-  'Kyrie 7 EP Sisterhood',
-  'Nike Air Zoom BB NXT',
-  'Nike Air Force 1 07 LX',
-  'Nike Air Force 1 Shadow SE',
-  'Nike Air Zoom Tempo NEXT%',
-  'Nike DBreak-Type',
-  'Nike Air Max Up',
-  'Nike Air Max 270 React ENG',
-  'NikeCourt Royale',
-  'Nike Air Zoom Pegasus 37 Premium',
-  'Nike Air Zoom SuperRep',
-  'NikeCourt Royale',
-  'Nike React Art3mis',
-  'Nike React Infinity Run Flyknit A.I.R. Chaz Bear',
-];
-const PRODUCT_COLOR = ['#00AB55', '#000000', '#FFFFFF', '#FFC0CB', '#FF4842', '#1890FF', '#94D82D', '#FFC107'];
-
-// ----------------------------------------------------------------------
-
-const products = [...Array(24)].map((_, index) => {
-  const setIndex = index + 1;
-
-  return {
-    id: faker.datatype.uuid(),
-    cover: `/assets/images/products/product_${setIndex}.jpg`,
-    name: PRODUCT_NAME[index],
-    price: faker.datatype.number({ min: 4, max: 99, precision: 0.01 }),
-    priceSale: setIndex % 3 ? null : faker.datatype.number({ min: 19, max: 29, precision: 0.01 }),
-    colors:
-      (setIndex === 1 && PRODUCT_COLOR.slice(0, 2)) ||
-      (setIndex === 2 && PRODUCT_COLOR.slice(1, 3)) ||
-      (setIndex === 3 && PRODUCT_COLOR.slice(2, 4)) ||
-      (setIndex === 4 && PRODUCT_COLOR.slice(3, 6)) ||
-      (setIndex === 23 && PRODUCT_COLOR.slice(4, 6)) ||
-      (setIndex === 24 && PRODUCT_COLOR.slice(5, 6)) ||
-      PRODUCT_COLOR,
-    status: sample(['sale', 'new', '', '']),
-  };
-});
+const products = [
+  {
+    id: 1,
+    name: 'Lomas de San Francisco Tepojaco',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      city: 'Lomas de San Francisco Tepojaco',
+      town: 'Cuautitlan Izcalli',
+      street: 'Miguel Quevedo',
+      number: '5',
+      square: '20',
+      zip: '54986'
+    },
+    size: '130mts',
+    price: 500000,
+    status: 'DISPONIBLE', 
+  }, 
+  {
+    id: 2,
+    name: 'Cuautitlan Norte',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      city: 'Lomas de San Francisco Tepojaco',
+      town: 'Cuautitlan Izcalli',
+      street: 'Lazaro Cardenas',
+      square: '20',
+      number: '5',
+      zip: '54986'
+    },
+    size: '100mts',
+    price: 750000,
+    status: 'DISPONIBLE', 
+  },
+  {
+    id: 3,
+    name: 'San Francisco Tepojaco Lote 34',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      city: 'Lomas de San Francisco Tepojaco',
+      town: 'Cuautitlan Izcalli',
+      street: 'Manzano Picoso',
+      square: '20',
+      number: '34',
+      zip: '54986'
+    },
+    size: '200mts',
+    price: 800000,
+    status: 'APARTADO', 
+  },
+  {
+    id: 4,
+    name: 'San Francisco Tepojaco Lote 98',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      town: 'Lomas de San Francisco Tepojaco',
+      street: 'Av Molino Suave',
+      square: '20',
+      number: '98',
+      zip: '54986'
+    },
+    size: '300mts',
+    price: 1000000,
+    status: 'DISPONIBLE', 
+  },
+  {
+    id: 5,
+    name: 'San Francisco Tepojaco Lote 95',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      town: 'Lomas de San Francisco Tepojaco',
+      street: 'Av Reyes Heroles',
+      square: '13',
+      number: '95',
+      zip: '54986'
+    },
+    size: '100mts',
+    price: 200000,
+    status: 'INVADIDO', 
+  },
+  {
+    id: 6,
+    name: 'San Francisco Tepojaco Lote 12',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      town: 'Lomas de San Francisco Tepojaco',
+      street: 'Av San Juan Bautista',
+      square: '13',
+      number: '12',
+      zip: '54986'
+    },
+    size: '100mts',
+    price: 200000,
+    status: 'VENDIDO', 
+  },
+  {
+    id: 7,
+    name: 'San Francisco Tepojaco Lote 56',
+    address: {
+      country: 'México',
+      state: 'Estado de México',
+      town: 'Lomas de San Francisco Tepojaco',
+      street: 'Av San Juan Bautista',
+      square: '13',
+      number: '56',
+      zip: '54986'
+    },
+    size: '100mts',
+    price: 200000,
+    status: 'LIQUIDADO', 
+  }
+]
 
 export default products;

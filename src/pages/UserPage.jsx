@@ -291,9 +291,9 @@ export default function UserPage() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
-  if(!response) {
+  if(!response && loading) {
     return (
-      <Loader loading={loading} />
+      <Loader />
     );
   }
 
@@ -315,7 +315,7 @@ export default function UserPage() {
           <Divider />
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              <Grid container spacing={1} justifyContent="center" sx={{ flexGrow: 1 }}>
+              <Grid container spacing={1}   sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     margin="normal"

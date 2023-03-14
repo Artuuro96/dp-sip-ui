@@ -37,7 +37,6 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav, userInfo }) {
   const { pathname } = useLocation();
-  console.log("USERINFOOOOOO", userInfo)
 
   const isDesktop = useResponsive('up', 'lg');
 
@@ -53,12 +52,12 @@ export default function Nav({ openNav, onCloseNav, userInfo }) {
       sx={{
         height: 1,
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
+        backgroundColor: '#DFE3E8',
       }}
     >
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
         <Logo />
       </Box>
-
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none">
           <StyledAccount>

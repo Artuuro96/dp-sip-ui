@@ -7,7 +7,7 @@ import Cookies from 'universal-cookie';
 import jwtDecode from 'jwt-decode';
 import Header from './header';
 import Nav from './nav';
-import Loader from '../../components/common/Loader';
+// import Loader from '../../components/common/Loader';
 
 
 
@@ -49,7 +49,7 @@ export default function DashboardLayout() {
 
   return (
     <StyledRoot>
-      <Header onOpenNav={() => setOpen(true)} />
+      <Header onOpenNav={() => setOpen(true)} userInfo={userInfo} />
       <Nav openNav={open} onCloseNav={() => setOpen(false)} userInfo={userInfo}/>
       <Main>
         <Outlet />
