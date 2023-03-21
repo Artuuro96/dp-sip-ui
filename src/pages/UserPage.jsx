@@ -73,19 +73,6 @@ const MenuProps = {
   },
 };
 
-const names = [
-  'Oliver Hansen',
-  'Van Henry',
-  'April Tucker',
-  'Ralph Hubbard',
-  'Omar Alexander',
-  'Carlos Abbott',
-  'Miriam Wagner',
-  'Bradley Wilkerson',
-  'Virginia Andrews',
-  'Kelly Snyder',
-];
-
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
@@ -183,7 +170,7 @@ export default function UserPage() {
 
   useEffect(() => {
     verify().
-    then(result => {
+    then(() => {
       getAllUsers();
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps

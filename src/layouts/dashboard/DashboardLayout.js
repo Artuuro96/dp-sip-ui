@@ -39,9 +39,15 @@ const Main = styled('div')(({ theme }) => ({
 
 
 export default function DashboardLayout() {
-  const cookies = new Cookies()
+  const cookies = new Cookies();
   const token = cookies.get('jwt');
-  const userInfo = jwtDecode(token);
+  let userInfo;
+  console.log("TOKEN", token);
+  try {
+    const userInfo = jwtDecode(token);
+  } catch (error) {
+    console.log(error);
+  }
   const [open, setOpen] = useState(false);
 
 

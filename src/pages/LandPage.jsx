@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 // @mui
-import { Container, Typography, Stack, Button, Pagination} from '@mui/material';
+import { Container, Typography, Stack, Button, Pagination, Grid } from '@mui/material';
 import Scrollbar from '../components/scrollbar';
 import Iconify from '../components/iconify/Iconify'
 // components
@@ -37,6 +37,11 @@ export default function ProductsPage() {
             Nuevo Terreno
           </Button>
         </Stack>
+        <Grid container spacing={1} sx={{ flexGrow: 1 }}>
+          <Grid item xs={12} md={6}>
+            hola
+          </Grid>
+        </Grid>
         { /* <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="flex-end" sx={{ mb: 5 }}>
           <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
              <ProductFilterSidebar

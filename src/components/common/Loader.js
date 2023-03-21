@@ -1,12 +1,7 @@
-import { PropTypes } from 'prop-types';
 import {
 	CircularProgress,
 	Backdrop,
 } from '@mui/material'
-
-Loader.propTypes = {
-	loading: PropTypes.bool,
-}
 
 export default function Loader() {
   return (

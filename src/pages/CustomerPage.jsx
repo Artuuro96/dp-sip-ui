@@ -26,11 +26,13 @@ import { filter } from 'lodash';
 import { verify } from '../common/verify';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
-import ClientProfile from '../sections/@dashboard/clients/ClientProfile';
+import NewCustomerDg from '../sections/@dashboard/customer/NewCustomerDg';
+import UpdateCustomerDg from '../sections/@dashboard/customer/UpdateCustomerDg';
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 
 import Loader from '../components/common/Loader';
 import AlertMessage from '../components/common/AlertMessage';
+import { PromerClient } from '../api/PromerClient';
 
 const CUSTOMERLIST = [
   {
@@ -399,13 +401,12 @@ function applySortFilter(array, comparator, query) {
 
 export default function CustomerPage() {
   const [loading, setLoading] = useState(true);
-  const [openUserDg, setOpenUserDg] = useState(false);
+  const [openCustomerDg, setOpenCustomerDg] = useState(false);
   const [personName, setPersonName] = useState([]);
-  const [updateUserDg, setUpdateUserDg] = useState(false);
+  const [updateDg, setUpdateDg] = useState(false);
   const [alertProps, setAlertProps] = useState({
     show: false
   })
-  const [response, setResponse] = useState(null);
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -413,47 +414,61 @@ export default function CustomerPage() {
   const [orderBy, setOrderBy] = useState('name');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [users, setUsers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [clientProfileDg, setClientProfileDg] = useState(false);
   const [clientSelected, setClientSelected] = useState(null);
-  
+  const [response, setResponse] = useState(null);
 
-  useEffect(() => {
-    setUsers(CUSTOMERLIST)
-    verify().then(res => {
-      setResponse(res);
+  const findCustomers = async () => {
+    const promerClient = new PromerClient();
+    setLoading(true);
+    try {
+      const customers = await promerClient.findCustomers();
+      setCustomers(customers);
       setLoading(false);
-    });
+    } catch (error) {
+      setLoading(false);
+      console.error(error)
+    }
+  }
+
+  const openAlert = (props) => {
+    setAlertProps({
+      ...props,
+      handleClose: () => setAlertProps({ show: false })
+    })
+  }
+  useEffect(() => {
+    verify()
+      .then((response) => {
+        setResponse(response);
+        setLoading(false);
+        findCustomers()
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log(error);
+      })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, client) => {
     setOpen(event.currentTarget);
+    setClientSelected(client);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
+    setClientSelected(null);
   };
 
-  const closeNewUserDg = (event) => {
-    setOpenUserDg(false);
+  const openNewCustomerDg = (show) => {
+    setOpenCustomerDg(show);
   };
 
-  const openNewUserDg = (event) => {
-    setOpenUserDg(true);
-  }
-
-  const createNewUser = (event) => {
-
-  }
-
-  const openUpdateUserDg = () => {
-    setUpdateUserDg(true);
-  }
-  
-  const closeUpdateUserDg = () => {
-    setUpdateUserDg(false)
-  }
+  const openUpdateCustomerDg = (show) => {
+    setUpdateDg(show);
+  };
 
   const openClientProfileDg = (client) => {
     setClientProfileDg(true);
@@ -473,7 +488,7 @@ export default function CustomerPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = CUSTOMERLIST.map((n) => n.name);
+      const newSelecteds = customers.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -519,10 +534,9 @@ export default function CustomerPage() {
     );
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - customers.length) : 0;
 
-  const filteredUsers = applySortFilter(users, getComparator(order, orderBy), filterName);
-
+  const filteredUsers = applySortFilter(customers, getComparator(order, orderBy), filterName);
   const isNotFound = !filteredUsers.length && !!filterName;
 
   if(!response && loading) {
@@ -538,17 +552,21 @@ export default function CustomerPage() {
           <title> Promer | Usuarios </title>
         </Helmet>
         <Container>
-          
           <AlertMessage alertProps={alertProps}/>
           <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
             <Typography variant="h4" gutterBottom>
               Clientes
             </Typography>
-            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={openNewUserDg}>
+            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => openNewCustomerDg(true)}>
               Nuevo Cliente
             </Button>
           </Stack> 
-
+          <NewCustomerDg 
+            open={openCustomerDg}
+            handleCloseDg={() => openNewCustomerDg(false)}
+            findCustomers={findCustomers}
+            openAlert={openAlert}
+          />
           <Card>
             <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
             <Scrollbar>
@@ -558,7 +576,7 @@ export default function CustomerPage() {
                     order={order}
                     orderBy={orderBy}
                     headLabel={TABLE_HEAD}
-                    rowCount={users.length}
+                    rowCount={customers.length}
                     numSelected={selected.length}
                     onRequestSort={handleRequestSort}
                     onSelectAllClick={handleSelectAllClick}
@@ -566,7 +584,6 @@ export default function CustomerPage() {
                   <TableBody>
                     {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                       const { _id, cellPhone, email, name, lastName, phone, secondLastName, behaviour } = row;
-                      console.log(behaviour)
                       const selectedUser = selected.indexOf(name) !== -1;
 
                       return (
@@ -646,13 +663,13 @@ export default function CustomerPage() {
                   )}
                 </Table>
               </TableContainer>
-              <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} client={clientSelected}/>
+              {/* <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} client={clientSelected}/> */}
             </Scrollbar>
 
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={users.length}
+              count={customers.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -679,7 +696,7 @@ export default function CustomerPage() {
             },
           }}
         >
-          <MenuItem onClick={() => setUpdateUserDg(true)}>
+          <MenuItem onClick={() => openUpdateCustomerDg(true)}>
             <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
             Editar
           </MenuItem>
@@ -689,6 +706,11 @@ export default function CustomerPage() {
             Delete
           </MenuItem>
         </Popover>
+        <UpdateCustomerDg
+          open={updateDg}
+          handleCloseDg={() => openUpdateCustomerDg(false)}
+          client={clientSelected}
+        />
       </>
     );
   } 
