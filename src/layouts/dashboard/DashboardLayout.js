@@ -44,7 +44,7 @@ export default function DashboardLayout() {
   let userInfo;
   console.log("TOKEN", token);
   try {
-    const userInfo = jwtDecode(token);
+    userInfo = jwtDecode(token);
   } catch (error) {
     console.log(error);
   }
