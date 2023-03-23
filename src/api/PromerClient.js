@@ -8,9 +8,19 @@ export class PromerClient {
     this.cookies = new Cookies();
     const token = this.cookies.get('jwt')
     this.axios = axios.create({
-      baseURL: 'http://localhost:3000/v1',
+      baseURL: 'http://localhost:3001/v1',
       headers: { 'Authorization': `Bearer ${token}`}
-    });
+    });;
+  }
+
+  async findCustomers() {
+    const response = await this.axios.get('/customers');
+    return response?.data?.result;
+  }
+
+  async createCustomer(newUser) {
+    const response = await this.axios.post('/customers', newUser);
+    return response;
   }
 
   async importFile(fileImport) {
@@ -56,4 +66,8 @@ export class PromerClient {
     }
   }
   
+  async findCustomerProfile(customerId) {
+    const response = await this.axios.get(`/customers/profile/${customerId}`);
+    return response?.data
+  }
 }

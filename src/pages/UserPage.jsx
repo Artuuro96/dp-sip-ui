@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
 // @mui
 import {
   Card,
@@ -73,19 +72,6 @@ const MenuProps = {
   },
 };
 
-const names = [
-  'Oliver Hansen',
-  'Van Henry',
-  'April Tucker',
-  'Ralph Hubbard',
-  'Omar Alexander',
-  'Carlos Abbott',
-  'Miriam Wagner',
-  'Bradley Wilkerson',
-  'Virginia Andrews',
-  'Kelly Snyder',
-];
-
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
@@ -125,7 +111,7 @@ export default function UserPage() {
   const [alertProps, setAlertProps] = useState({
     show: false
   })
-  const [response, setResponse] = useState(null);
+  // const [response, setResponse] = useState(null);
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -134,8 +120,9 @@ export default function UserPage() {
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [users, setUsers] = useState([]);
+  const cookies = new Cookies();
 
-  const verify = async () => {
+  /* const verify = async () => {
     const cookies = new Cookies();
     const token = cookies.get('jwt')
     const acmaClient = new AcmaClient();
@@ -154,8 +141,8 @@ export default function UserPage() {
           type: 'warning',
           handleClose: () => setAlertProps({ show: false })
         });
-        // const res = await acmaClient.refresh();
-        console.log(message)
+        await acmaClient.refresh();
+        console.log( message)
       } else {
         setAlertProps({
           message,
@@ -166,26 +153,27 @@ export default function UserPage() {
       setLoading(false);
       
     }
-  }
+  } */
 
   const getAllUsers = async () => {
     const acmaClient = new AcmaClient();
-    setLoading(true);
     try {
       const res = await acmaClient.getAllUsers();
       setUsers(res.data);
       setLoading(false);
     } catch (error) {
-      console.error(error);
-      setLoading(false);
+      const statusCode = error.response?.status;
+      if (statusCode === 401 && cookies.get('refresh_jwt')) {
+        await acmaClient.refresh().catch(error => { throw error });
+        window.location.reload();
+        setLoading(false);
+      }
+      
     }
   }
 
   useEffect(() => {
-    verify().
-    then(result => {
-      getAllUsers();
-    })
+    getAllUsers();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -291,18 +279,15 @@ export default function UserPage() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
-  if(!response && loading) {
-    return (
-      <Loader />
-    );
-  }
-
-  if(response?.data?.verified) {
-    return (
-      <>
-        <Helmet>
-          <title> Promer | Usuarios </title>
-        </Helmet>
+  return (
+    <>
+      <Helmet>
+        <title> Promer | Usuarios </title>
+      </Helmet>
+      <Loader show={loading}/>
+      <AlertMessage alertProps={alertProps}/>
+      { users ? ( 
+        <>
         <Dialog
           open={openUserDg}
           onClose={closeNewUserDg}
@@ -315,7 +300,7 @@ export default function UserPage() {
           <Divider />
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              <Grid container spacing={1}   sx={{ flexGrow: 1 }}>
+              <Grid container spacing={1} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     margin="normal"
@@ -325,8 +310,7 @@ export default function UserPage() {
                     label="Nombre(s)"
                     name="name"
                     autoComplete="name"
-                    autoFocus
-                  />
+                    autoFocus />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -337,8 +321,7 @@ export default function UserPage() {
                     label="Apellido(s)"
                     name="lastName"
                     autoComplete="lastName"
-                    autoFocus
-                  />
+                    autoFocus />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -349,8 +332,7 @@ export default function UserPage() {
                     label="Usuario"
                     name="username"
                     autoComplete="username"
-                    autoFocus
-                  />
+                    autoFocus />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <FormControl sx={{ mt: 2 }} fullWidth>
@@ -383,8 +365,7 @@ export default function UserPage() {
                     label="Correo Electrónico"
                     type="email"
                     id="email"
-                    autoComplete="email"
-                  />
+                    autoComplete="email" />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -395,8 +376,7 @@ export default function UserPage() {
                     label="Constraseña"
                     name="password"
                     autoComplete="password"
-                    autoFocus
-                  />
+                    autoFocus />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -407,8 +387,7 @@ export default function UserPage() {
                     label="Confirmar Constraseña"
                     name="passConfirmed"
                     autoComplete="passConfirmed"
-                    autoFocus
-                  />
+                    autoFocus />
                 </Grid>
               </Grid>
             </DialogContentText>
@@ -420,275 +399,259 @@ export default function UserPage() {
               Guardar
             </Button>
           </DialogActions>
-        </Dialog>
-        <Dialog
+        </Dialog><Dialog
           open={updateUserDg}
           onClose={closeUpdateUserDg}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">
-            Actualizar Usuario
-          </DialogTitle>
-          <Divider />
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <Grid container spacing={1} justifyContent="center" sx={{ flexGrow: 1 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="name"
-                    label="Nombre(s)"
-                    name="name"
-                    autoComplete="name"
-                    autoFocus
-                  />
+            <DialogTitle id="alert-dialog-title">
+              Actualizar Usuario
+            </DialogTitle>
+            <Divider />
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                <Grid container spacing={1} justifyContent="center" sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="name"
+                      label="Nombre(s)"
+                      name="name"
+                      autoComplete="name"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="lastName"
+                      label="Apellido(s)"
+                      name="lastName"
+                      autoComplete="lastName"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="username"
+                      label="Usuario"
+                      name="username"
+                      autoComplete="username"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl sx={{ mt: 2 }} fullWidth>
+                      <InputLabel id="demo-multiple-checkbox-label">Roles</InputLabel>
+                      <Select
+                        labelId="demo-multiple-checkbox-label"
+                        id="demo-multiple-checkbox"
+                        multiple
+                        value={personName}
+                        onChange={handleChange}
+                        input={<OutlinedInput label="Tag" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                      >
+                        {names.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <Checkbox checked={personName.indexOf(name) > -1} />
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="email"
+                      label="Correo Electrónico"
+                      type="email"
+                      id="email"
+                      autoComplete="email" />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="password"
+                      label="Constraseña"
+                      name="password"
+                      autoComplete="password"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="passConfirmed"
+                      label="Confirmar Constraseña"
+                      name="passConfirmed"
+                      autoComplete="passConfirmed"
+                      autoFocus />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="lastName"
-                    label="Apellido(s)"
-                    name="lastName"
-                    autoComplete="lastName"
-                    autoFocus
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="username"
-                    label="Usuario"
-                    name="username"
-                    autoComplete="username"
-                    autoFocus
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl sx={{ mt: 2 }} fullWidth>
-                    <InputLabel id="demo-multiple-checkbox-label">Roles</InputLabel>
-                    <Select
-                      labelId="demo-multiple-checkbox-label"
-                      id="demo-multiple-checkbox"
-                      multiple
-                      value={personName}
-                      onChange={handleChange}
-                      input={<OutlinedInput label="Tag" />}
-                      renderValue={(selected) => selected.join(', ')}
-                      MenuProps={MenuProps}
-                    >
-                      {names.map((name) => (
-                        <MenuItem key={name} value={name}>
-                          <Checkbox checked={personName.indexOf(name) > -1} />
-                          <ListItemText primary={name} />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={12}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="email"
-                    label="Correo Electrónico"
-                    type="email"
-                    id="email"
-                    autoComplete="email"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="password"
-                    label="Constraseña"
-                    name="password"
-                    autoComplete="password"
-                    autoFocus
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="passConfirmed"
-                    label="Confirmar Constraseña"
-                    name="passConfirmed"
-                    autoComplete="passConfirmed"
-                    autoFocus
-                  />
-                </Grid>
-              </Grid>
-            </DialogContentText>
-          </DialogContent>
-          <Divider />
-          <DialogActions>
-            <Button onClick={closeUpdateUserDg} color="error" variant="outlined">Cancelar</Button>
-            <Button onClick={closeUpdateUserDg} autoFocus variant="outlined">
-              Guardar
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Container>
-          <AlertMessage alertProps={alertProps}/>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-            <Typography variant="h4" gutterBottom>
-              Usuarios
-            </Typography>
-            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={openNewUserDg}>
-              Nuevo Usuario
-            </Button>
-          </Stack>
+              </DialogContentText>
+            </DialogContent>
+            <Divider />
+            <DialogActions>
+              <Button onClick={closeUpdateUserDg} color="error" variant="outlined">Cancelar</Button>
+              <Button onClick={closeUpdateUserDg} autoFocus variant="outlined">
+                Guardar
+              </Button>
+            </DialogActions>
+          </Dialog><Container>
+            <AlertMessage alertProps={alertProps} />
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+              <Typography variant="h4" gutterBottom>
+                Usuarios
+              </Typography>
+              <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={openNewUserDg}>
+                Nuevo Usuario
+              </Button>
+            </Stack>
 
-          <Card>
-            <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
-            <Scrollbar>
-              <TableContainer sx={{ minWidth: 800 }}>
-                <Table>
-                  <UserListHead
-                    order={order}
-                    orderBy={orderBy}
-                    headLabel={TABLE_HEAD}
-                    rowCount={users.length}
-                    numSelected={selected.length}
-                    onRequestSort={handleRequestSort}
-                    onSelectAllClick={handleSelectAllClick}
-                  />
-                  <TableBody>
-                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                      const { id, username, email, name, roles, verified, active } = row;
-                      const selectedUser = selected.indexOf(name) !== -1;
+            <Card>
+              <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+              <Scrollbar>
+                <TableContainer sx={{ minWidth: 800 }}>
+                  <Table>
+                    <UserListHead
+                      order={order}
+                      orderBy={orderBy}
+                      headLabel={TABLE_HEAD}
+                      rowCount={users.length}
+                      numSelected={selected.length}
+                      onRequestSort={handleRequestSort}
+                      onSelectAllClick={handleSelectAllClick} />
+                    <TableBody>
+                      {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                        const { id, username, email, name, roles, verified, active } = row;
+                        const selectedUser = selected.indexOf(name) !== -1;
 
-                      return (
-                        <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                          <TableCell padding="checkbox">
-                            <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                          </TableCell>
+                        return (
+                          <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                            <TableCell padding="checkbox">
+                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                            </TableCell>
 
-                          <TableCell component="th" scope="row" padding="none">
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src='/assets/images/avatars/unknown.png'/>
-                              <Typography variant="subtitle2" noWrap>
-                                {name}
+                            <TableCell component="th" scope="row" padding="none">
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <Avatar alt={name} src='/assets/images/avatars/unknown.png' />
+                                <Typography variant="subtitle2" noWrap>
+                                  {name}
+                                </Typography>
+                              </Stack>
+                            </TableCell>
+
+                            <TableCell align="left">{username}</TableCell>
+
+                            <TableCell align="left">{email}</TableCell>
+
+                            <TableCell align="left">
+                              <Stack direction="row" spacing={1}>
+                                {roles.map((role) => (<Chip label={role.name} color='info' key={role.id} />))}
+                              </Stack>
+                            </TableCell>
+
+                            <TableCell align="left">{verified ? 'Sí' : 'No'}</TableCell>
+
+                            <TableCell align="left">
+                              <Stack direction="row" spacing={1}>
+                                <Chip label={active ? 'Activo' : 'Desactivado'} color={active ? 'success' : 'warning'} />
+                              </Stack>
+                            </TableCell>
+
+                            <TableCell align="left">
+                              <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
+                                <Iconify icon={'eva:more-vertical-fill'} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      {emptyRows > 0 && (
+                        <TableRow style={{ height: 53 * emptyRows }}>
+                          <TableCell colSpan={6} />
+                        </TableRow>
+                      )}
+                    </TableBody>
+
+                    {isNotFound && (
+                      <TableBody>
+                        <TableRow>
+                          <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                            <Paper
+                              sx={{
+                                textAlign: 'center',
+                              }}
+                            >
+                              <Typography variant="h6" paragraph>
+                                Not found
                               </Typography>
-                            </Stack>
-                          </TableCell>
 
-                          <TableCell align="left">{username}</TableCell>
-
-                          <TableCell align="left">{email}</TableCell>
-
-                          <TableCell align="left">
-                            <Stack direction="row" spacing={1}>
-                              {
-                                roles.map((role) => (<Chip label={role.name} color='info' key={role.id} />))
-                              }
-                            </Stack> 
-                          </TableCell>
-
-                          <TableCell align="left">{verified ? 'Sí' : 'No'}</TableCell>
-
-                          <TableCell align="left">
-                            <Stack direction="row" spacing={1}>
-                              <Chip label={active ? 'Activo' : 'Desactivado'}  color={active ? 'success' : 'warning'}/>
-                            </Stack>
-                          </TableCell>
-
-                          <TableCell align="left">
-                            <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
-                              <Iconify icon={'eva:more-vertical-fill'} />
-                            </IconButton>
+                              <Typography variant="body2">
+                                No results found for &nbsp;
+                                <strong>&quot;{filterName}&quot;</strong>.
+                                <br /> Try checking for typos or using complete words.
+                              </Typography>
+                            </Paper>
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
-                    {emptyRows > 0 && (
-                      <TableRow style={{ height: 53 * emptyRows }}>
-                        <TableCell colSpan={6} />
-                      </TableRow>
+                      </TableBody>
                     )}
-                  </TableBody>
+                  </Table>
+                </TableContainer>
+              </Scrollbar>
 
-                  {isNotFound && (
-                    <TableBody>
-                      <TableRow>
-                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                          <Paper
-                            sx={{
-                              textAlign: 'center',
-                            }}
-                          >
-                            <Typography variant="h6" paragraph>
-                              Not found
-                            </Typography>
-
-                            <Typography variant="body2">
-                              No results found for &nbsp;
-                              <strong>&quot;{filterName}&quot;</strong>.
-                              <br /> Try checking for typos or using complete words.
-                            </Typography>
-                          </Paper>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  )}
-                </Table>
-              </TableContainer>
-            </Scrollbar>
-
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={users.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Card>
-        </Container>
-
-        <Popover
-          open={Boolean(open)}
-          anchorEl={open}
-          onClose={handleCloseMenu}
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          PaperProps={{
-            sx: {
-              p: 1,
-              width: 140,
-              '& .MuiMenuItem-root': {
-                px: 1,
-                typography: 'body2',
-                borderRadius: 0.75,
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={users.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage} />
+            </Card>
+          </Container><Popover
+            open={Boolean(open)}
+            anchorEl={open}
+            onClose={handleCloseMenu}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{
+              sx: {
+                p: 1,
+                width: 140,
+                '& .MuiMenuItem-root': {
+                  px: 1,
+                  typography: 'body2',
+                  borderRadius: 0.75,
+                },
               },
-            },
-          }}
-        >
-          <MenuItem onClick={() => setUpdateUserDg(true)}>
-            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-            Editar
-          </MenuItem>
+            }}
+          >
+            <MenuItem onClick={() => setUpdateUserDg(true)}>
+              <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+              Editar
+            </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
-            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Delete
-          </MenuItem>
-        </Popover>
-      </>
-    );
-  } 
-
-  return (<Navigate to={'/login'} />);
+            <MenuItem sx={{ color: 'error.main' }}>
+              <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+              Delete
+            </MenuItem>
+          </Popover></>
+      ) : <Loader />} 
+    </>
+  );
 }

@@ -14,7 +14,6 @@ import {
   Table,
   TableContainer,
   IconButton,
-  Chip,
   Checkbox,
   Popover,
   MenuItem,
@@ -22,15 +21,21 @@ import {
 } from '@mui/material';
 // components
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { filter } from 'lodash';
-import { verify } from '../common/verify';
+import Cookies from 'universal-cookie';
+import { AcmaClient } from '../api/AcmaClient';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+import NewCustomerDg from '../sections/@dashboard/customer/NewCustomerDg';
+import UpdateCustomerDg from '../sections/@dashboard/customer/UpdateCustomerDg';
 import ClientProfile from '../sections/@dashboard/clients/ClientProfile';
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 
 import Loader from '../components/common/Loader';
 import AlertMessage from '../components/common/AlertMessage';
+import { PromerClient } from '../api/PromerClient';
+
 
 const CUSTOMERLIST = [
   {
@@ -399,13 +404,12 @@ function applySortFilter(array, comparator, query) {
 
 export default function CustomerPage() {
   const [loading, setLoading] = useState(true);
-  const [openUserDg, setOpenUserDg] = useState(false);
+  const [openCustomerDg, setOpenCustomerDg] = useState(false);
   const [personName, setPersonName] = useState([]);
-  const [updateUserDg, setUpdateUserDg] = useState(false);
+  const [updateDg, setUpdateDg] = useState(false);
   const [alertProps, setAlertProps] = useState({
     show: false
   })
-  const [response, setResponse] = useState(null);
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -413,47 +417,72 @@ export default function CustomerPage() {
   const [orderBy, setOrderBy] = useState('name');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [users, setUsers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [clientProfileDg, setClientProfileDg] = useState(false);
   const [clientSelected, setClientSelected] = useState(null);
-  
+  const [response, setResponse] = useState(null);
+  const cookies = new Cookies();
+  const navigate = useNavigate();
+
+  const findCustomers = async () => {
+    const promerClient = new PromerClient();
+    const acmaClient = new AcmaClient();
+    try {
+      const customersReponse = await promerClient.findCustomers();
+      setCustomers(customersReponse);
+      setLoading(false);
+    } catch (error) {
+      const { status, message } = error?.response;
+
+      if (status === 401 && cookies.get('refresh_jwt')) {
+        await acmaClient.refresh().catch(error => { throw error });
+        window.location.reload();
+        setLoading(false);
+      }
+
+      if (status === 401 && !cookies.get('refresh_jwt')) {
+        setAlertProps({
+          show: true,
+          message: 'Tu sesión ha caducado',
+          type: 'error'
+        })
+        setTimeout(() => {
+          navigate('/');
+        }, 3000)
+        
+      }
+    }
+  }
+
+  const openAlert = (props) => {
+    setAlertProps({
+      ...props,
+      handleClose: () => setAlertProps({ show: false })
+    })
+  }
 
   useEffect(() => {
-    setUsers(CUSTOMERLIST)
-    verify().then(res => {
-      setResponse(res);
-      setLoading(false);
-    });
+   findCustomers();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, client) => {
     setOpen(event.currentTarget);
+    setClientSelected(client);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
+    setClientSelected(null);
   };
 
-  const closeNewUserDg = (event) => {
-    setOpenUserDg(false);
+  const openNewCustomerDg = (show) => {
+    setOpenCustomerDg(show);
   };
 
-  const openNewUserDg = (event) => {
-    setOpenUserDg(true);
-  }
-
-  const createNewUser = (event) => {
-
-  }
-
-  const openUpdateUserDg = () => {
-    setUpdateUserDg(true);
-  }
-  
-  const closeUpdateUserDg = () => {
-    setUpdateUserDg(false)
-  }
+  const openUpdateCustomerDg = (show) => {
+    setUpdateDg(show);
+  };
 
   const openClientProfileDg = (client) => {
     setClientProfileDg(true);
@@ -473,7 +502,7 @@ export default function CustomerPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = CUSTOMERLIST.map((n) => n.name);
+      const newSelecteds = customers.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -519,177 +548,184 @@ export default function CustomerPage() {
     );
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - customers.length) : 0;
 
-  const filteredUsers = applySortFilter(users, getComparator(order, orderBy), filterName);
+  const filteredCustomers = applySortFilter(customers, getComparator(order, orderBy), filterName);
+  const isNotFound = !filteredCustomers.length && !!filterName;
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+  return (
+    <>
+      <Helmet>
+        <title> Promer | Clientes </title>
+      </Helmet>
+      <Loader show={loading}/>
+      <AlertMessage alertProps={alertProps}/>
+      { customers ? (
+        <>
+          <Container>
+            <AlertMessage alertProps={alertProps}/>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+              <Typography variant="h4" gutterBottom>
+                Clientes
+              </Typography>
+              <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => openNewCustomerDg(true)}>
+                Nuevo Cliente
+              </Button>
+            </Stack> 
+            <NewCustomerDg 
+              open={openCustomerDg}
+              handleCloseDg={() => openNewCustomerDg(false)}
+              findCustomers={findCustomers}
+              openAlert={openAlert}
+            />
+            <Card>
+              <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+              <Scrollbar>
+                <TableContainer sx={{ minWidth: 800 }}>
+                  <Table>
+                    <UserListHead
+                      order={order}
+                      orderBy={orderBy}
+                      headLabel={TABLE_HEAD}
+                      rowCount={customers.length}
+                      numSelected={selected.length}
+                      onRequestSort={handleRequestSort}
+                      onSelectAllClick={handleSelectAllClick}
+                    />
+                    <TableBody>
+                      {filteredCustomers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                        const { _id, cellPhone, email, name, lastName, phone, secondLastName, behaviour } = row;
+                        const selectedUser = selected.indexOf(name) !== -1;
 
-  if(!response && loading) {
-    return (
-      <Loader />
-    );
-  }
+                        return (
+                          <TableRow hover key={_id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                            <TableCell padding="checkbox">
+                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                            </TableCell>
 
-  if(response?.data?.verified) {
-    return (
-      <>
-        <Helmet>
-          <title> Promer | Usuarios </title>
-        </Helmet>
-        <Container>
-          
-          <AlertMessage alertProps={alertProps}/>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-            <Typography variant="h4" gutterBottom>
-              Clientes
-            </Typography>
-            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={openNewUserDg}>
-              Nuevo Cliente
-            </Button>
-          </Stack> 
+                            <TableCell align="left">
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <Typography variant="subtitle2" noWrap>
+                                  <Link href='#' onClick={() => openClientProfileDg(row)}>
+                                    {name} {lastName} {secondLastName}
+                                  </Link>
+                                </Typography>
+                              </Stack>
+                            </TableCell>
 
-          <Card>
-            <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
-            <Scrollbar>
-              <TableContainer sx={{ minWidth: 800 }}>
-                <Table>
-                  <UserListHead
-                    order={order}
-                    orderBy={orderBy}
-                    headLabel={TABLE_HEAD}
-                    rowCount={users.length}
-                    numSelected={selected.length}
-                    onRequestSort={handleRequestSort}
-                    onSelectAllClick={handleSelectAllClick}
-                  />
-                  <TableBody>
-                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                      const { _id, cellPhone, email, name, lastName, phone, secondLastName, behaviour } = row;
-                      console.log(behaviour)
-                      const selectedUser = selected.indexOf(name) !== -1;
+                            <TableCell align="left">{cellPhone}</TableCell>
 
-                      return (
-                        <TableRow hover key={_id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                          <TableCell padding="checkbox">
-                            <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                          </TableCell>
+                            <TableCell align="left">{phone ||'S/N'}</TableCell>
 
-                          <TableCell align="left">
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                              <Typography variant="subtitle2" noWrap>
-                                <Link href='#' onClick={() => openClientProfileDg(row)}>
-                                  {name} {lastName} {secondLastName}
-                                </Link>
+                            <TableCell align="left">
+                              <Stack direction="row" spacing={1}>
+                                {email}
+                              </Stack> 
+                            </TableCell>
+
+                            <TableCell align="center">
+                              {
+                                behaviour === 'OK' ? 
+                                ( <Iconify icon="mdi:tick-circle" width={35} height={35} sx={{ color: '#54D62C' }}/> ) :
+                                behaviour === 'DELAY' ? 
+                                ( <Iconify icon="bi:exclamation-circle-fill" width={31} height={35} sx={{ color: '#FFC107' }}/> ) :
+                                ( <Iconify icon="gridicons:cross-circle" width={35} height={35} sx={{ color: '#FF4842' }}/> )
+                              }
+                              
+                            </TableCell>
+
+                            <TableCell align="left">
+                              <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
+                                <Iconify icon={'eva:more-vertical-fill'} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      {emptyRows > 0 && (
+                        <TableRow style={{ height: 53 * emptyRows }}>
+                          <TableCell colSpan={6} />
+                        </TableRow>
+                      )}
+                    </TableBody>
+
+                    {isNotFound && (
+                      <TableBody>
+                        <TableRow>
+                          <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                            <Paper
+                              sx={{
+                                textAlign: 'center',
+                              }}
+                            >
+                              <Typography variant="h6" paragraph>
+                                Sin Resultados
                               </Typography>
-                            </Stack>
-                          </TableCell>
 
-                          <TableCell align="left">{cellPhone}</TableCell>
-
-                          <TableCell align="left">{phone ||'S/N'}</TableCell>
-
-                          <TableCell align="left">
-                            <Stack direction="row" spacing={1}>
-                              {email}
-                            </Stack> 
-                          </TableCell>
-
-                          <TableCell align="center">
-                            {
-                              behaviour === 'OK' ? 
-                              ( <Iconify icon="mdi:tick-circle" width={35} height={35} sx={{ color: '#54D62C' }}/> ) :
-                              behaviour === 'DELAY' ? 
-                              ( <Iconify icon="bi:exclamation-circle-fill" width={31} height={35} sx={{ color: '#FFC107' }}/> ) :
-                              ( <Iconify icon="gridicons:cross-circle" width={35} height={35} sx={{ color: '#FF4842' }}/> )
-                            }
-                            
-                          </TableCell>
-
-                          <TableCell align="left">
-                            <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
-                              <Iconify icon={'eva:more-vertical-fill'} />
-                            </IconButton>
+                              <Typography variant="body2">
+                                No se encontraron resultados para &nbsp;
+                                <strong>&quot;{filterName}&quot;</strong>.
+                                <br /> Intente con alguna otra palabra clave
+                              </Typography>
+                            </Paper>
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
-                    {emptyRows > 0 && (
-                      <TableRow style={{ height: 53 * emptyRows }}>
-                        <TableCell colSpan={6} />
-                      </TableRow>
+                      </TableBody>
                     )}
-                  </TableBody>
+                  </Table>
+                </TableContainer>
+                <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} customerId={clientSelected?._id}/>
+              </Scrollbar>
 
-                  {isNotFound && (
-                    <TableBody>
-                      <TableRow>
-                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                          <Paper
-                            sx={{
-                              textAlign: 'center',
-                            }}
-                          >
-                            <Typography variant="h6" paragraph>
-                              Sin Resultados
-                            </Typography>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={customers.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Card>
+          </Container>
 
-                            <Typography variant="body2">
-                              No se encontraron resultados para &nbsp;
-                              <strong>&quot;{filterName}&quot;</strong>.
-                              <br /> Intente con alguna otra palabra clave
-                            </Typography>
-                          </Paper>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  )}
-                </Table>
-              </TableContainer>
-              <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} client={clientSelected}/>
-            </Scrollbar>
-
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={users.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Card>
-        </Container>
-
-        <Popover
-          open={Boolean(open)}
-          anchorEl={open}
-          onClose={handleCloseMenu}
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          PaperProps={{
-            sx: {
-              p: 1,
-              width: 140,
-              '& .MuiMenuItem-root': {
-                px: 1,
-                typography: 'body2',
-                borderRadius: 0.75,
+          <Popover
+            open={Boolean(open)}
+            anchorEl={open}
+            onClose={handleCloseMenu}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{
+              sx: {
+                p: 1,
+                width: 140,
+                '& .MuiMenuItem-root': {
+                  px: 1,
+                  typography: 'body2',
+                  borderRadius: 0.75,
+                },
               },
-            },
-          }}
-        >
-          <MenuItem onClick={() => setUpdateUserDg(true)}>
-            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-            Editar
-          </MenuItem>
+            }}
+          >
+            <MenuItem onClick={() => openUpdateCustomerDg(true)}>
+              <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+              Editar
+            </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
-            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Delete
-          </MenuItem>
-        </Popover>
-      </>
-    );
-  } 
+            <MenuItem sx={{ color: 'error.main' }}>
+              <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+              Delete
+            </MenuItem>
+          </Popover>
+          <UpdateCustomerDg
+            open={updateDg}
+            handleCloseDg={() => openUpdateCustomerDg(false)}
+            client={clientSelected}
+          />
+        </> 
+        ) : ( <Loader /> )
+      }
+    </> 
+  );
+  
 }

@@ -1,17 +1,18 @@
-import { PropTypes } from 'prop-types';
 import {
 	CircularProgress,
 	Backdrop,
 } from '@mui/material'
+import PropTypes from 'prop-types';
+
 
 Loader.propTypes = {
-	loading: PropTypes.bool,
+  show: PropTypes.bool
 }
 
-export default function Loader() {
+export default function Loader({ show = true }) {
   return (
     <>
-      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={Boolean(true)}>
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={show}>
         <CircularProgress color="inherit" />
       </Backdrop>
     </>
