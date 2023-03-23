@@ -198,20 +198,12 @@ export default function UserPage() {
     setOpen(null);
   };
 
-  const closeNewUserDg = (event) => {
+  const closeNewUserDg = () => {
     setOpenUserDg(false);
   };
 
-  const openNewUserDg = (event) => {
+  const openNewUserDg = () => {
     setOpenUserDg(true);
-  }
-
-  const createNewUser = (event) => {
-
-  }
-
-  const openUpdateUserDg = () => {
-    setUpdateUserDg(true);
   }
   
   const closeUpdateUserDg = () => {

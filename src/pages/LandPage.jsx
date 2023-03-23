@@ -33,14 +33,12 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { isNil } from 'lodash';
-import Scrollbar from '../components/scrollbar';
 import Loader from '../components/common/Loader';
 import Iconify from '../components/iconify/Iconify'
 import { PromerClient } from '../api/PromerClient';
 // components
 import { LandList } from '../sections/@dashboard/products';
 // mock
-import PRODUCTS from '../_mock/products';
 
 // ----------------------------------------------------------------------
 
