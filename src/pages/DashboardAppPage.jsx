@@ -49,7 +49,7 @@ export default function DashboardAppPage() {
       setResponse(res);
       setLoading(false);
     } catch (error) {
-      console.error('Error verifying user token', error);
+      console.error('Error verifying user token', error.response);
       setResponse(error.response);
       const message = error.response?.data?.message
       if(message === 'jwt malformed' || message === 'jwt expired ') {
@@ -58,7 +58,7 @@ export default function DashboardAppPage() {
           type: 'warning',
           handleClose: () => setAlertProps({ show: false })
         });
-        // const res = await acmaClient.refresh();
+        await acmaClient.refresh();
         console.log(message)
       } else {
         setAlertProps({

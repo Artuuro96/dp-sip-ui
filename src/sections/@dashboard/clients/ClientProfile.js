@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import { 
   Dialog, 
@@ -20,22 +20,41 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Slide from '@mui/material/Slide';
 import PropTypes from 'prop-types';
+import { PromerClient } from '../../../api/PromerClient';
 import Iconify from '../../../components/iconify';
 import { fCurrency } from '../../../utils/formatNumber';
 import { fDate } from '../../../utils/formatTime';
+import Loader from '../../../components/common/Loader';
+
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 ClientProfile.propTypes = {
   open: PropTypes.bool,
   handleCloseDg: PropTypes.func,
-  client: PropTypes.object,
+  customerId: PropTypes.string,
 }
 
-export default function ClientProfile({ open, handleCloseDg, client }) {
+export default function ClientProfile({ open, handleCloseDg, customerId }) {
   const [page, setPage] = useState(0);
+  const [profile, setProfile] = useState(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  console.log(client?.credit)
+  const promerClient = new PromerClient();
+
+
+  const findCustomerProfile = async (customerId) => {
+    try {
+      const response = await promerClient.findCustomerProfile(customerId);
+      setProfile(response);
+    } catch(error) {
+      console.error(error);
+    }
+  }
+  
+  useEffect(() => {
+    findCustomerProfile(customerId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerId])
 
 
   const handleChangePage = (event, newPage) => {
@@ -65,28 +84,25 @@ export default function ClientProfile({ open, handleCloseDg, client }) {
       align: 'center',
     },
     {
-      id: 'payment',
+      id: 'quantity',
       label: 'Cantidad',
       minWidth: 120,
       align: 'center',
     },
     {
-      id: 'method',
-      label: 'Método',
+      id: 'advance',
+      label: 'Adelanto',
       minWidth: 120,
       align: 'center',
     },
   ];
-  
-  function createData(name, code, population, size) {
-    const density = population / size;
-    return { name, code, population, size, density };
-  }
 
-  console.log("?===========>", client)
-  
-  const rows = client?.payments || []
-  return(
+  const rows = profile?.payments || []
+
+  if (!profile) {
+    <Loader />
+  }
+  return (
     <Dialog
       fullScreen
       open={open}
@@ -111,12 +127,12 @@ export default function ClientProfile({ open, handleCloseDg, client }) {
           <Grid xs={12} md={12} sx={{marginTop: 2, marginRight: 5, marginLeft: 5}}>
             <Card>
               <Typography sx={{ ml: 2, flex: 1 }} variant="h4" component="div">
-                {client?.name} {client?.lastName} {client?.secondLastName}
+                {profile?.customer.name} {profile?.customer.lastName} {profile?.customer.secondLastName}
               </Typography>
               <Typography sx={{ ml: 2, flex: 1 }} component="div">
-                Edad: {client?.age} años<br/>
-                Genero: {client?.gender}<br/>
-                Facebook: {client?.facebook}
+                Edad: {profile?.customer.age} años<br/>
+                Genero: {profile?.customer.gender}<br/>
+                Facebook: {profile?.customer.facebook}
               </Typography>
             </Card>
           </Grid>
@@ -155,7 +171,7 @@ export default function ClientProfile({ open, handleCloseDg, client }) {
                                 return (
                                   <TableCell key={column.id} align={column.align}>
                                     {column.format && typeof value === 'number'
-                                      ? fCurrency(value)
+                                      ? `$${ fCurrency(value)}`
                                       : typeof value === 'object'
                                       ? fDate(value)
                                       : value
@@ -188,14 +204,14 @@ export default function ClientProfile({ open, handleCloseDg, client }) {
                 </Typography>
               </Stack>
               <Typography variant="h7" sx={{ ml: 2, flex: 1 }} >
-                Número de Crédito: {client?.credit.creditNumber}
+                Número de Crédito: {profile?.credit?.creditNumber}
               </Typography>
               <Grid container justify="center" sx={{ maxHeight: 460, minHeight:460 }} >
                 <Grid xs={3.7} sx={{mt: 1, mr: 1, ml: 1}}>
                   <Card style={{ border: `2px solid`, boxShadow: "2.5px 5px" }} justify="center" align='center'>
                     <Typography variant="h6" sx={{ ml: 2, flex: 1}} >
                       Crédito <br />
-                      {fCurrency(client?.credit.totalDebt)}
+                      {fCurrency(profile?.credit?.totalDebt)}
                     </Typography>
                   </Card>
                 </Grid>
@@ -203,7 +219,7 @@ export default function ClientProfile({ open, handleCloseDg, client }) {
                   <Card style={{ border: `2px solid`, boxShadow: "2.5px 5px" }} justify="center" align='center'>
                     <Typography variant="h6" sx={{ml:1, flex: 1}} >
                       Saldo al Corte <br />
-                      {fCurrency(client?.credit.currentBalance)}
+                      {fCurrency(profile?.credit?.currentBalance)}
                     </Typography>
                   </Card>
                 </Grid>
@@ -211,7 +227,7 @@ export default function ClientProfile({ open, handleCloseDg, client }) {
                   <Card style={{ border: `2px solid #7A0C2E`, boxShadow: "2.5px 5px #7A0C2E" }} justify="center" align='center'>
                     <Typography variant="h6" sx={{ml:1, flex: 1, color: "#7A0C2E"}} >
                       Próximo Pago <br />
-                      {fCurrency(client?.credit.regularPayment)}
+                      {fCurrency(profile?.credit?.regularPayment)}
                     </Typography>
                   </Card>
                 </Grid>

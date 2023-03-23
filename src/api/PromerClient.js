@@ -43,5 +43,9 @@ export class PromerClient {
     const response = await this.axios.get('/lands');
     return response;
   }
-  
+
+  async findCustomerProfile(customerId) {
+    const response = await this.axios.get(`/customers/profile/${customerId}`);
+    return response?.data
+  }
 }

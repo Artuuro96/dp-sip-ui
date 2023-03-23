@@ -29,19 +29,24 @@ export class AcmaClient {
 
   async refresh() {
     const refreshToken = this.cookies.get('refresh_jwt');
+
+    console.log("REFRESHHHHHHH ANTESSSSSs", this.cookies.get('refresh_jwt'));
+    console.log("TOKEN ANTESSSSSs", this.cookies.get('jwt'))
     const response = await this.axios.post('/auth/refresh', {}, {
       headers: { 'Authorization': `Bearer ${refreshToken}`}
     });
     const decodeRefresh = jwtDecode(response.data.refreshToken);
     const decode = jwtDecode(response.data.refreshToken);
-    this.cookies.set('jwt', {
+    this.cookies.set('jwt', response?.data.accessToken, {
       exp: new Date(decode.exp)
-    })
-    this.cookies.set('refresh_jwt', {
+    });
+    this.cookies.set('refresh_jwt', response?.data.refreshToken, {
       exp: new Date(decodeRefresh.exp)
-    })
+    });
     
-    return response;
+    console.log("REFRESHHHHHHH DESPUES", this.cookies.get('refresh_jwt'));
+    console.log("TOKEN DESPUES", this.cookies.get('jwt'))
+    return response?.data;
   }
 
   async verify(token) {
