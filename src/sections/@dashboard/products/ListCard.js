@@ -39,11 +39,26 @@ export default function ListCard({ product }) {
     case 'VENDIDO':
       color = 'primary';
       break;
+    case 'LIQUIDADO':
+      color = 'warning';
+      break;
+    case 'APARTADO':
+      color = 'warning';
+      break;
+    case 'REUBICAR':
+      color = 'error';
+      break;
+    case 'SRMIGUEL':
+      color = 'info';
+      break;
     case 'INVADIDO':
       color = 'error';
       break;
-    case 'LIQUIDADO':
-      color = 'warning';
+    case 'AFECTADO':
+      color = 'error';
+      break;
+    case 'BAJA':
+      color = 'error';
       break;
     default:
       color = 'info';
@@ -64,7 +79,7 @@ export default function ListCard({ product }) {
 
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Typography> 
-              {street} Mz{square} Lt{number}, {town}, {zip} {city}, {state}, {country}
+              {street} Mz{square} {number}, {town}, {zip} {city}, {state}, {country}
             </Typography>
            
           </Stack>

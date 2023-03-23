@@ -17,7 +17,6 @@ export class PromerClient {
     try {
       const formData = new FormData();
       formData.append("fileImport", fileImport);
-      console.log(this.axios.baseURL)
       const response = await this.axios.post('/lands/import-create-lands', formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -29,9 +28,32 @@ export class PromerClient {
     }
   }
 
-  async findAllLands() {
-    const response = await this.axios.get('/lands');
+  async findAllLands({
+    limit, skip, keyValue
+  }) {
+    const query = {
+      params: {
+        limit,
+        skip,
+        keyValue,
+      }
+    }
+
+    if (!keyValue || keyValue === '' || keyValue === undefined)
+      delete query.params.keyValue
+    console.log(keyValue)
+    const response = await this.axios.get('/lands',query);
     return response;
+  }
+
+  async createLand(land) {
+    try {
+      const response = await this.axios.post('/lands', land);
+      return response?.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
   
 }
