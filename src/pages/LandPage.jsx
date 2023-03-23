@@ -20,7 +20,19 @@ import {
   TableCell,
   TableBody,
   Paper,
+  PaginationItem,
+  Link,
+  DialogContentText,
+  TextField,
+  Grid,
+  Select,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  IconButton,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { isNil } from 'lodash';
 import Scrollbar from '../components/scrollbar';
 import Loader from '../components/common/Loader';
 import Iconify from '../components/iconify/Iconify'
@@ -36,49 +48,169 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(false);
   const [openImport, setOpenImport] = useState(false);
+  const [openNewLand, setOpenNewLand] = useState(false);
   const [openResult, setOpenResult] = useState(false);
   const [file, setFile] = useState(null);
   const [successImport, setSuccessImport] = useState([]);
   const [failImport, setFailImport] = useState([]);
   const [maxLength, setMaxLength] = useState([]);
-  const [lands, setLands] = useState([]);
-  const fileTypeImport = 'xlsx'
+  const [pageResult, setPageResult] = useState([]);
+  const [actualPage, setActualPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [totalLands, setTotalLands] = useState(0);
+  const [defaultLimitResults, setDefaultLimitResults] = useState(1);
+
+  const [searchText, setSearchText] = useState('');
+
+  // Land
+  const [name, setname] = useState("")
+  const [geofence, setgeofence] = useState("")
+  const [available, setavailable] = useState("")
+  const [price, setprice] = useState("")
+  const [size, setsize] = useState("")
+  const [status, setstatus] = useState("")
+
+  // Address
+  const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [town, setTown] = useState("");
+  const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [zip, setZip] = useState("");
+
+  const fileTypeImport = 'xlsx';
+  const statusOptions = [
+    { value: 'DISPONIBLE', label: 'DISPONIBLE' },
+    { value: 'VENDIDO', label: 'VENDIDO' },
+    { value: 'LIQUIDADO', label: 'LIQUIDADO' },
+    { value: 'APARTADO', label: 'APARTADO' },
+    { value: 'REUBICAR', label: 'REUBICAR' },
+    { value: 'SRMIGUEL', label: 'SRMIGUEL' },
+    { value: 'INVADIDO', label: 'INVADIDO' },
+    { value: 'AFECTADO', label: 'AFECTADO' },
+    { value: 'BAJA', label: 'BAJA' },
+  ];
+
+  const handleSearch = (event) => {
+    setSearchText(event.target.value);
+  };
+
+  const searchLands = async () => {
+    const promerClient = new PromerClient();
+    try {
+      const search = {
+        limit: defaultLimitResults,
+        skip: 1,
+        keyValue: searchText
+      }
+      if(isNil(search.keyValue)) {
+        findAllLands();
+      } else {
+        const res = await promerClient.findAllLands(search);
+        setPageResult(res.data.result);
+        setActualPage(1)
+        setPages(res.data.pages)
+        setTotalLands(res.data.total)
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const handleCountryChange = (event) => {
+    setCountry(event.target.value);
+  };
+
+  const handleStateChange = (event) => {
+    setState(event.target.value);
+  };
+
+  const handleCityChange = (event) => {
+    setCity(event.target.value);
+  };
+
+  const handleTownChange = (event) => {
+    setTown(event.target.value);
+  };
+
+  const handleStreetChange = (event) => {
+    setStreet(event.target.value);
+  };
+
+  const handleNumberChange = (event) => {
+    setNumber(event.target.value);
+  };
+
+  const handleNameChange = (event) =>{
+    setname(event.target.value)
+  }
+  const handleGeofenceChange = (event) =>{
+    setgeofence(event.target.value)
+  }
+  const handleAvailableChange = (event) =>{
+    setavailable(event.target.value)
+  }
+  const handlePriceChange = (event) =>{
+    setprice(event.target.value)
+  }
+  const handleSizeChange = (event) =>{
+    setsize(event.target.value)
+  }
+  const handleStatusChange = (event) =>{
+    setstatus(event.target.value)
+  }
+  const handleZipChange = (event) =>{
+    const value = event.target.value.replace(/[^0-9]/g, '');
+    const maxLength = 5;
+
+    if (value.length <= maxLength) {
+      setZip(value.slice(0, maxLength));
+    }
+  }
 
   useEffect(() => {
-    setLoading(true);
     findAllLands();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleOpenFilter = () => {
-    setOpenFilter(true);
-  };
-
-  const handleCloseFilter = () => {
-    setOpenFilter(false);
-  };
 
   const findAllLands = async () => {
     const promerClient = new PromerClient();
+    try {
+      const res = await promerClient.findAllLands({
+        limit: defaultLimitResults,
+        skip: actualPage
+      });
+      setPageResult(res.data.result);
+      setActualPage(res.data.page)
+      setPages(res.data.pages)
+      setTotalLands(res.data.total)
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const handlePagePageChange = async (event, value) => {
+    const promerClient = new PromerClient();
     setLoading(true);
     try {
-      const res = await promerClient.findAllLands();
-      setLands(res.data);
+      const res = await promerClient.findAllLands({
+        limit: defaultLimitResults,
+        skip: value
+      });
+      setPageResult(res.data.result);
+      setActualPage(value)
+      setPages(res.data.pages)
+      setTotalLands(res.data.total)
       setLoading(false);
+
     } catch (error) {
       console.error(error);
       setLoading(false);
     }
+    
   }
 
-  const closeImportDg = (event) => {
-    event.preventDefault();
-    setOpenImport(false);
-    setTimeout(() => {
-      setFile(null);
-      setOpenResult(false)
-    }, 500);
-  };
+  
 
   const sendFileRest = async (event) => {
     event.preventDefault();
@@ -103,6 +235,82 @@ export default function ProductsPage() {
 
   const openImportDg = () => {
     setOpenImport(true);
+  }
+  const closeImportDg = (event) => {
+    event.preventDefault();
+    setOpenImport(false);
+    setTimeout(() => {
+      setFile(null);
+      setOpenResult(false)
+    }, 500);
+  };
+
+  const saveNewLand = async () => {
+    const newLand = {
+      name,
+      geofence: [],
+      available: status === 'DISPONIBLE',
+      price,
+      size,
+      status,
+      address: {
+        country: 'México',
+        state,
+        city,
+        town,
+        street,
+        number,
+        zip,
+      }
+    }
+    const promerClient = new PromerClient();
+    setLoading(true);
+    try {
+      const res = await promerClient.createLand(newLand);
+      closeNewLandDg()
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      closeNewLandDg();
+    }
+  }
+
+  const disabledSaveNewLand = () => {
+    if(isNil(name) || isNil(price) || isNil(size) || isNil(status) || isNil(state) || isNil(city) || isNil(zip))
+      return true
+    return false
+  }
+
+
+  const cleanAllNewLandFields = () => {
+    // Land
+    setname("");
+    setgeofence("");
+    setavailable("");
+    setprice("");
+    setsize("");
+    setstatus("");
+
+    // Address
+    setCountry("");
+    setState("");
+    setCity("");
+    setTown("");
+    setStreet("");
+    setNumber("");
+    setZip("");
+  }
+
+  const openNewLandDg = () => {
+    setOpenNewLand(true);
+  }
+
+  const closeNewLandDg = () => {
+    setTimeout(() => {
+      cleanAllNewLandFields()
+    }, 500);
+    setOpenNewLand(false);
   }
 
   const handleDragOver = (event) => {
@@ -256,7 +464,7 @@ export default function ProductsPage() {
           <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} sx={{ ml: 'auto', mr: '10px' }} onClick={openImportDg}>
             Importar desde EXCEL
           </Button>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} >
+          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={openNewLandDg} >
             Nuevo Terreno
           </Button>
         </Stack>
@@ -285,9 +493,231 @@ export default function ProductsPage() {
             
           </DialogActions>
         </Dialog>
-        <LandList products={PRODUCTS} />
+
+        <Dialog
+          open={openNewLand}
+          onClose={closeNewLandDg}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Nuevo Terreno
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              <Grid container spacing={1} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="name"
+                    label="Nombre"
+                    name="name"
+                    autoComplete="name"
+                    autoFocus
+                    value={name}
+                    onChange={handleNameChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="price"
+                    label="Precio"
+                    name="price"
+                    autoComplete="price"
+                    value={price}
+                    onChange={handlePriceChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="size"
+                    label="Tamaño"
+                    name="size"
+                    autoComplete="size"
+                    value={size}
+                    onChange={handleSizeChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth margin="normal" style={{ marginTop: '16px' }}>
+                    <InputLabel id="status-label">Status</InputLabel>
+                    <Select
+                      labelId="status-label"
+                      id="status"
+                      name="status"
+                      label="status"
+                      value={status}
+                      onChange={handleStatusChange}
+                    >
+                      {statusOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={12}>
+                  <Typography variant="subtitle1" component="h2">
+                    Dirección
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="country"
+                    label="País"
+                    name="country"
+                    autoComplete="country"
+                    select
+                    value={country}
+                    onChange={handleCountryChange}
+                  >
+                    <MenuItem value="México">México</MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="state"
+                    label="Estado/Provincia"
+                    name="state"
+                    autoComplete="state"
+                    value={state}
+                    onChange={handleStateChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="city"
+                    label="Ciudad"
+                    name="city"
+                    autoComplete="city"
+                    value={city}
+                    onChange={handleCityChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="town"
+                    label="Municipio/Barrio"
+                    name="town"
+                    autoComplete="town"
+                    value={town}
+                    onChange={handleTownChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="street"
+                    label="Calle"
+                    name="street"
+                    autoComplete="street"
+                    value={street}
+                    onChange={handleStreetChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="number"
+                    label="Número"
+                    name="number"
+                    autoComplete="number"
+                    value={number}
+                    onChange={handleNumberChange}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="zip"
+                    label="Código Postal"
+                    name="zip"
+                    autoComplete="zip"
+                    type="number"
+                    value={zip}
+                    inputProps={{
+                      maxLength: 5
+                    }}
+                    onChange={handleZipChange}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContentText>
+          </DialogContent>
+          <Divider />
+          <DialogActions>
+            <Button onClick={closeNewLandDg} color="error" variant="outlined">Cancelar</Button>
+            <Button onClick={saveNewLand} disabled={disabledSaveNewLand} autoFocus variant="outlined">
+              Guardar
+            </Button>
+          </DialogActions>
+        </Dialog>
+        
+        <Paper
+          component="form"
+          sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 800 }}
+          style={{ textAlign: 'right' }}
+        >
+        <TextField 
+          id="outlined-search" 
+          label="Buscar por nombre" 
+          type="search" 
+          fullWidth 
+          value={searchText}
+          onChange={handleSearch} 
+        />
+        <IconButton type="button" sx={{ p: '10px' }} onClick={searchLands} aria-label="search">
+            <SearchIcon />
+        </IconButton>
+        </Paper>
+
+        <LandList products={pageResult} style={{ marginTop: '20px' }} />
         <Stack spacing={2} marginTop={5} alignItems="center">
-          <Pagination count={10} variant="outlined" />
+        <Pagination
+          count={pages}
+          page={actualPage}
+          onChange={handlePagePageChange}
+          color="primary"
+          hideNextButton={actualPage === pages}
+          hidePrevButton={actualPage === 1}
+          disabled={defaultLimitResults === 0}
+          renderItem={(item) => (
+            <PaginationItem
+              component={Link}
+              to={`/?page=${item.page}`}
+              {...item}
+              disabled={actualPage === item.page} 
+            />
+          )}
+        />
         </Stack>
       </Container>
     </>
