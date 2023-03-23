@@ -190,10 +190,6 @@ export default function ProductsPage() {
   }
 
   const handlePagePageChange = async (event, value) => {
-    console.log({
-      limit: defaultLimitResults,
-      skip: value
-    })
     const promerClient = new PromerClient();
     setLoading(true);
     try {
@@ -201,7 +197,6 @@ export default function ProductsPage() {
         limit: defaultLimitResults,
         skip: value
       });
-      console.log(res.data)
       setPageResult(res.data.result);
       setActualPage(value)
       setPages(res.data.pages)
@@ -272,7 +267,6 @@ export default function ProductsPage() {
     setLoading(true);
     try {
       const res = await promerClient.createLand(newLand);
-      console.log(res)
       closeNewLandDg()
       setLoading(false);
     } catch (error) {

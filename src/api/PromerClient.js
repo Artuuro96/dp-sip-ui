@@ -51,7 +51,6 @@ export class PromerClient {
 
     if (!keyValue || keyValue === '' || keyValue === undefined)
       delete query.params.keyValue
-    console.log(keyValue)
     const response = await this.axios.get('/lands',query);
     return response;
   }
