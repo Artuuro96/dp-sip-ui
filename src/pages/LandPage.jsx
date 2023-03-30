@@ -44,7 +44,7 @@ import { LandList } from '../sections/@dashboard/products';
 
 export default function ProductsPage() {
   const [loading, setLoading] = useState(false);
-  const [openFilter, setOpenFilter] = useState(false);
+  // Import Logic
   const [openImport, setOpenImport] = useState(false);
   const [openNewLand, setOpenNewLand] = useState(false);
   const [openResult, setOpenResult] = useState(false);
@@ -52,11 +52,13 @@ export default function ProductsPage() {
   const [successImport, setSuccessImport] = useState([]);
   const [failImport, setFailImport] = useState([]);
   const [maxLength, setMaxLength] = useState([]);
+
+  // Paginate Result
   const [pageResult, setPageResult] = useState([]);
   const [actualPage, setActualPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [totalLands, setTotalLands] = useState(0);
-  const [defaultLimitResults, setDefaultLimitResults] = useState(1);
+  const [defaultLimitResults, setDefaultLimitResults] = useState(2);
 
   const [searchText, setSearchText] = useState('');
 
@@ -264,7 +266,7 @@ export default function ProductsPage() {
     const promerClient = new PromerClient();
     setLoading(true);
     try {
-      const res = await promerClient.createLand(newLand);
+      await promerClient.createLand(newLand);
       closeNewLandDg()
       setLoading(false);
     } catch (error) {
@@ -673,7 +675,7 @@ export default function ProductsPage() {
           <Divider />
           <DialogActions>
             <Button onClick={closeNewLandDg} color="error" variant="outlined">Cancelar</Button>
-            <Button onClick={saveNewLand} disabled={disabledSaveNewLand} autoFocus variant="outlined">
+            <Button onClick={saveNewLand} disabled={disabledSaveNewLand()} autoFocus variant="outlined">
               Guardar
             </Button>
           </DialogActions>
@@ -697,25 +699,25 @@ export default function ProductsPage() {
         </IconButton>
         </Paper>
 
-        <LandList products={pageResult} style={{ marginTop: '20px' }} />
+        <LandList products={pageResult} style={{ marginTop: '20px' }}  />
         <Stack spacing={2} marginTop={5} alignItems="center">
-        <Pagination
-          count={pages}
-          page={actualPage}
-          onChange={handlePagePageChange}
-          color="primary"
-          hideNextButton={actualPage === pages}
-          hidePrevButton={actualPage === 1}
-          disabled={defaultLimitResults === 0}
-          renderItem={(item) => (
-            <PaginationItem
-              component={Link}
-              to={`/?page=${item.page}`}
-              {...item}
-              disabled={actualPage === item.page} 
-            />
-          )}
-        />
+          <Pagination
+            count={pages}
+            page={actualPage}
+            onChange={handlePagePageChange}
+            color="primary"
+            hideNextButton={actualPage === pages}
+            hidePrevButton={actualPage === 1}
+            disabled={defaultLimitResults === 0}
+            renderItem={(item) => (
+              <PaginationItem
+                component={Link}
+                to={`/?page=${item.page}`}
+                {...item}
+                disabled={actualPage === item.page} 
+              />
+            )}
+          />
         </Stack>
       </Container>
     </>

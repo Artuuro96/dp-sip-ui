@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -7,11 +7,13 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
-import { DialogActions, DialogContent, Dialog, DialogTitle } from '@mui/material';
+import { DialogActions, DialogContent, Dialog } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import AddressForm from './AddressFrom';
+import { isEmpty } from 'lodash';
+import CreateContract from './CreateContract';
 import PaymentForm from './PaymentForm';
 import Review from './ReviewForm';
+import { PromerClient } from '../../../api/PromerClient';
 
 function Copyright() {
   return (
@@ -26,31 +28,143 @@ function Copyright() {
   );
 }
 
-const steps = ['Shipping address', 'Payment details', 'Review your order'];
+const steps = ['Creacion de venta', 'Creacion de credito', 'Confirmacion'];
 
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return <AddressForm />;
-    case 1:
-      return <PaymentForm />;
-    case 2:
-      return <Review />;
-    default:
-      throw new Error('Unknown step');
-  }
-}
+
 
 export default function NewSaleDg({openSaleDg, handleSaleDg }) {
-  const [activeStep, setActiveStep] = React.useState(0);
+  const [landToSell, setLandToSell] = useState('');
+  const [customerToSell, setCustomerToSell] = useState('');
+  const [paymentType, setPaymentType] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
 
-  const handleNext = () => {
-    setActiveStep(activeStep + 1);
+  const [contractCreated, setContractCreated] = useState({});
+  const [creditCreated, setCreditCreated] = useState({});
+
+  const [creditToCreate, setCreditToCreate] = useState({});
+
+  function getStepContent(step) {
+    switch (step) {
+      case 0:
+        return <CreateContract 
+        landToSell={landToSell}
+        setLandToSell={setLandToSell}
+        customerToSell={customerToSell}
+        setCustomerToSell={setCustomerToSell}
+        paymentType={paymentType}
+        setPaymentType={setPaymentType} />;
+      case 1:
+        return <PaymentForm
+        landToSell={landToSell}
+        customerToSell={customerToSell}
+        paymentType={paymentType}
+        contractCreated={contractCreated}
+        creditToCreate={creditToCreate}
+        setCreditToCreate={setCreditToCreate}
+        />;
+      case 2:
+        return <Review 
+        landToSell={landToSell}
+        customerToSell={customerToSell}
+        contractCreated={contractCreated}
+        creditCreated={creditCreated}
+        />;
+      default:
+        throw new Error('Unknown step');
+    }
+  }
+
+  const createContract = async () => {
+    const promerClient = new PromerClient();
+    try {
+      const contract = {
+        landId: landToSell._id,
+        customerId: customerToSell._id,
+        paymentType,
+      }
+      const res = await promerClient.createContract(contract);
+      if (!isEmpty(res.contractNumber)) {
+        setContractCreated(res);
+        console.log(res)
+        if(res.paymentType === "FULLPAYMENT") {
+          setActiveStep(activeStep + 2);
+        } else {
+          setActiveStep(activeStep + 1);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const createCredit = async () => {
+    const promerClient = new PromerClient();
+    try {
+      const credit = {
+        contractId: contractCreated._id,
+        customerId: contractCreated.customerId,
+        landId: contractCreated.landId,
+        creditNumber: contractCreated.contractNumber,
+        startDate: creditToCreate.startDate,
+        endDate: creditToCreate.endDate,
+        status: 'ASSIGNED',
+        termType: creditToCreate.termType,
+        termQuantity: Number(creditToCreate.termQuantity),
+        paymentDay:  Number(creditToCreate.paymentDay),
+        totalDebt:  Number(landToSell.price),
+        interestRate:  Number(creditToCreate.interestRate),
+      }
+      const res = await promerClient.createCredit(credit);
+      if (!isEmpty(res._id)) {
+        setCreditCreated(res);
+        console.log(res)
+        setActiveStep(2);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const handleNext = async () => {
+    if(activeStep === 0) {
+       await createContract()
+       return
+    }
+    if(activeStep === 1) {
+      await createCredit()
+   }
   };
 
-  const handleBack = () => {
-    setActiveStep(activeStep - 1);
-  };
+  const cleanAtClose = () => {
+    setTimeout(() => {
+      setLandToSell('');
+      setCustomerToSell('');
+      setPaymentType('');
+      setContractCreated({});
+      setCreditCreated({});
+      setCreditToCreate({});
+      setActiveStep(0);
+    }, 500);
+  }
+
+  const handleValidateNext = () => {
+    console.log(creditToCreate, activeStep)
+    if((!isEmpty(landToSell) && !isEmpty(customerToSell) && paymentType !== '') && activeStep === 0)
+      return false;
+    if(creditToCreate.created && activeStep === 1) 
+      return false;
+    return true
+  }
+
+  const handleNextShowButton = () => {
+    if(activeStep !== 2)
+      return (
+        <Button variant="contained" onClick={handleNext} sx={{ mt: 3, ml: 1 }} disabled={handleValidateNext()} >
+            {'Siguiente'}
+        </Button>
+      )
+    return <></>
+  }
 
   return (
     <Dialog fullWidth="md" maxWidth="md" open={openSaleDg} onClose={() => handleSaleDg(false)}>
@@ -67,38 +181,21 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
                 </Step>
               ))}
             </Stepper>
-            {activeStep === steps.length ? (
-              <>
-                <Typography variant="h5" gutterBottom>
-                  Thank you for your order.
-                </Typography>
-                <Typography variant="subtitle1">
-                  Your order number is #2001539. We have emailed your order confirmation, and will send you an update
-                  when your order has shipped.
-                </Typography>
-              </>
-            ) : (
+            {
               <>
                 {getStepContent(activeStep)}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  {activeStep !== 0 && (
-                    <Button onClick={handleBack} sx={{ mt: 3, ml: 1 }}>
-                      Back
-                    </Button>
-                  )}
-
-                  <Button variant="contained" onClick={handleNext} sx={{ mt: 3, ml: 1 }}>
-                    {activeStep === steps.length - 1 ? 'Place order' : 'Next'}
-                  </Button>
+                    {handleNextShowButton()}
+                  
                 </Box>
               </>
-            )}
+            }
           </Paper>
           <Copyright />
         </Container>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleSaleDg(false)}>Close</Button>
+        <Button onClick={() => {handleSaleDg(false); cleanAtClose()}}>Cerrar</Button>
       </DialogActions>
     </Dialog>
   );
