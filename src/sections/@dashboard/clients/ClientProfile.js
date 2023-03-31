@@ -204,7 +204,7 @@ export default function ClientProfile({ open, handleCloseDg, customerId }) {
                 </Typography>
               </Stack>
               <Typography variant="h7" sx={{ ml: 2, flex: 1 }} >
-                Número de Crédito: {profile?.credit?.creditNumber}
+                Número de Crédito: {profile?.credit?._id}
               </Typography>
               <Grid container justify="center" sx={{ maxHeight: 460, minHeight:460 }} >
                 <Grid xs={3.7} sx={{mt: 1, mr: 1, ml: 1}}>

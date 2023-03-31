@@ -30,9 +30,9 @@ export default function SaleCard({ title, content }){
                 Credito
               </Typography>
               <List disablePadding>
-                <ListItem key={content.credit.creditNumber} sx={{ py: 1, px: 0 }}>
+                <ListItem key={content.credit._id} sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Numero de credito:"  />
-                  <Typography variant="body2">{content.credit.creditNumber}</Typography>
+                  <Typography variant="body2">{content.credit._id}</Typography>
                 </ListItem>
                 <ListItem key={content.credit.startDate} sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Fecha de inicio:"  />
@@ -71,17 +71,13 @@ export default function SaleCard({ title, content }){
       <CardHeader title={`Terreno: ${title}`} />
       <CardContent>
         <List disablePadding>
-            <ListItem key={content.contract.contractNumber} sx={{ py: 1, px: 0 }}>
-              <ListItemText primary="Numero de Contrato:" />
-              <Typography variant="body2">{content.contract.contractNumber}</Typography>
+            <ListItem key={content.customer.name} sx={{ py: 1, px: 0 }}>
+              <ListItemText primary="Cliente:" />
+              <Typography variant="body2">{content.customer.name}</Typography>
             </ListItem>
             <ListItem key={content.contract.paymentType} sx={{ py: 1, px: 0 }}>
               <ListItemText primary="Tipo de Pago:" />
               <Typography variant="body2">{ content.contract.paymentType === 'CREDIT' ?  'CREDITO' : 'PAGO COMPLETO' }</Typography>
-            </ListItem>
-            <ListItem key={content.customer.name} sx={{ py: 1, px: 0 }}>
-              <ListItemText primary="Cliente:" />
-              <Typography variant="body2">{content.customer.name}</Typography>
             </ListItem>
         </List>
         <p>{handleShowCredit()}</p>

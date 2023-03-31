@@ -83,7 +83,7 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
         paymentType,
       }
       const res = await promerClient.createContract(contract);
-      if (!isEmpty(res.contractNumber)) {
+      if (!isEmpty(res._id)) {
         setContractCreated(res);
         console.log(res)
         if(res.paymentType === "FULLPAYMENT") {
@@ -104,7 +104,6 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
         contractId: contractCreated._id,
         customerId: contractCreated.customerId,
         landId: contractCreated.landId,
-        creditNumber: contractCreated.contractNumber,
         startDate: creditToCreate.startDate,
         endDate: creditToCreate.endDate,
         status: 'ASSIGNED',
