@@ -7,7 +7,7 @@ export function fNumber(number) {
 }
 
 export function fCurrency(number) {
-  const format = number ? numeral(number).format('$0,0.00') : '';
+  const format = number?.toString() ? numeral(number?.toString()).format('$0,0.00') : '';
   return result(format, '.00');
 }
 
@@ -36,5 +36,5 @@ function result(format, key = '.00') {
 }
 
 function fDate(date) {
-  return date.toLocaleDateString("en-US")
+  return date.toLocaleDateString("es-MX")
 }

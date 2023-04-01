@@ -30,13 +30,11 @@ const updateCustomer = async () => {
 };
 
 export default function UpdateCustomerDg({ open, handleCloseDg, client }) {
-  console.log("===== CLIENT", client)
   const [updatedCustomer, setUpdatedCustomer] = useState(client || null);
   
   const handleInputChange = (e) => {
     e.preventDefault();
     const { name, value } = e.target;
-    console.log("==========", name, value)
     setUpdatedCustomer({
       ...updatedCustomer,
       [name]: value,

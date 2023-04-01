@@ -190,7 +190,6 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
               </>
             }
           </Paper>
-          <Copyright />
         </Container>
       </DialogContent>
       <DialogActions>

@@ -280,123 +280,124 @@ export default function UserPage() {
       <AlertMessage alertProps={alertProps}/>
       { users ? ( 
         <>
-        <Dialog
-          open={openUserDg}
-          onClose={closeNewUserDg}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            Nuevo Usuario
-          </DialogTitle>
-          <Divider />
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <Grid container spacing={1} sx={{ flexGrow: 1 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="name"
-                    label="Nombre(s)"
-                    name="name"
-                    autoComplete="name"
-                    autoFocus />
+          <Dialog
+            open={openUserDg}
+            onClose={closeNewUserDg}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              Nuevo Usuario
+            </DialogTitle>
+            <Divider />
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                <Grid container spacing={1} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="name"
+                      label="Nombre(s)"
+                      name="name"
+                      autoComplete="name"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="lastName"
+                      label="Apellido(s)"
+                      name="lastName"
+                      autoComplete="lastName"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="username"
+                      label="Usuario"
+                      name="username"
+                      autoComplete="username"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl sx={{ mt: 2 }} fullWidth>
+                      <InputLabel id="demo-multiple-checkbox-label">Roles</InputLabel>
+                      <Select
+                        labelId="demo-multiple-checkbox-label"
+                        id="demo-multiple-checkbox"
+                        multiple
+                        value={personName}
+                        onChange={handleChange}
+                        input={<OutlinedInput label="Tag" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                      >
+                        {names.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <Checkbox checked={personName.indexOf(name) > -1} />
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="email"
+                      label="Correo Electrónico"
+                      type="email"
+                      id="email"
+                      autoComplete="email" />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="password"
+                      label="Constraseña"
+                      name="password"
+                      autoComplete="password"
+                      autoFocus />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="passConfirmed"
+                      label="Confirmar Constraseña"
+                      name="passConfirmed"
+                      autoComplete="passConfirmed"
+                      autoFocus />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="lastName"
-                    label="Apellido(s)"
-                    name="lastName"
-                    autoComplete="lastName"
-                    autoFocus />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="username"
-                    label="Usuario"
-                    name="username"
-                    autoComplete="username"
-                    autoFocus />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl sx={{ mt: 2 }} fullWidth>
-                    <InputLabel id="demo-multiple-checkbox-label">Roles</InputLabel>
-                    <Select
-                      labelId="demo-multiple-checkbox-label"
-                      id="demo-multiple-checkbox"
-                      multiple
-                      value={personName}
-                      onChange={handleChange}
-                      input={<OutlinedInput label="Tag" />}
-                      renderValue={(selected) => selected.join(', ')}
-                      MenuProps={MenuProps}
-                    >
-                      {names.map((name) => (
-                        <MenuItem key={name} value={name}>
-                          <Checkbox checked={personName.indexOf(name) > -1} />
-                          <ListItemText primary={name} />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={12}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="email"
-                    label="Correo Electrónico"
-                    type="email"
-                    id="email"
-                    autoComplete="email" />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="password"
-                    label="Constraseña"
-                    name="password"
-                    autoComplete="password"
-                    autoFocus />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="passConfirmed"
-                    label="Confirmar Constraseña"
-                    name="passConfirmed"
-                    autoComplete="passConfirmed"
-                    autoFocus />
-                </Grid>
-              </Grid>
-            </DialogContentText>
-          </DialogContent>
-          <Divider />
-          <DialogActions>
-            <Button onClick={closeNewUserDg} color="error" variant="outlined">Cancelar</Button>
-            <Button onClick={closeNewUserDg} autoFocus variant="outlined">
-              Guardar
-            </Button>
-          </DialogActions>
-        </Dialog><Dialog
-          open={updateUserDg}
-          onClose={closeUpdateUserDg}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
+              </DialogContentText>
+            </DialogContent>
+            <Divider />
+            <DialogActions>
+              <Button onClick={closeNewUserDg} color="error" variant="outlined">Cancelar</Button>
+              <Button onClick={closeNewUserDg} autoFocus variant="outlined">
+                Guardar
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={updateUserDg}
+            onClose={closeUpdateUserDg}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
             <DialogTitle id="alert-dialog-title">
               Actualizar Usuario
             </DialogTitle>
@@ -502,7 +503,8 @@ export default function UserPage() {
                 Guardar
               </Button>
             </DialogActions>
-          </Dialog><Container>
+          </Dialog>
+          <Container>
             <AlertMessage alertProps={alertProps} />
             <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
               <Typography variant="h4" gutterBottom>
@@ -615,34 +617,36 @@ export default function UserPage() {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage} />
             </Card>
-          </Container><Popover
-            open={Boolean(open)}
-            anchorEl={open}
-            onClose={handleCloseMenu}
-            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            PaperProps={{
-              sx: {
-                p: 1,
-                width: 140,
-                '& .MuiMenuItem-root': {
-                  px: 1,
-                  typography: 'body2',
-                  borderRadius: 0.75,
+          </Container>
+          <Popover
+              open={Boolean(open)}
+              anchorEl={open}
+              onClose={handleCloseMenu}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              PaperProps={{
+                sx: {
+                  p: 1,
+                  width: 140,
+                  '& .MuiMenuItem-root': {
+                    px: 1,
+                    typography: 'body2',
+                    borderRadius: 0.75,
+                  },
                 },
-              },
-            }}
-          >
-            <MenuItem onClick={() => setUpdateUserDg(true)}>
-              <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-              Editar
-            </MenuItem>
+              }}
+            >
+              <MenuItem onClick={() => setUpdateUserDg(true)}>
+                <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+                Editar
+              </MenuItem>
 
-            <MenuItem sx={{ color: 'error.main' }}>
-              <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-              Delete
-            </MenuItem>
-          </Popover></>
+              <MenuItem sx={{ color: 'error.main' }}>
+                <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+                Delete
+              </MenuItem>
+          </Popover>
+        </>
       ) : <Loader />} 
     </>
   );

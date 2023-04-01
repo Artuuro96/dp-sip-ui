@@ -152,7 +152,7 @@ export default function ProductsPage() {
     setavailable(event.target.value)
   }
   const handlePriceChange = (event) =>{
-    setprice(event.target.value)
+    setprice(Number(event.target.value))
   }
   const handleSizeChange = (event) =>{
     setsize(event.target.value)
@@ -171,6 +171,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     findAllLands();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const findAllLands = async () => {
@@ -250,7 +251,7 @@ export default function ProductsPage() {
       name,
       geofence: [],
       available: status === 'DISPONIBLE',
-      price,
+      price: Number(price),
       size,
       status,
       address: {
@@ -260,7 +261,7 @@ export default function ProductsPage() {
         town,
         street,
         number,
-        zip,
+        zip: Number(zip),
       }
     }
     const promerClient = new PromerClient();

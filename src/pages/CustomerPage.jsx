@@ -420,37 +420,42 @@ export default function CustomerPage() {
   const [customers, setCustomers] = useState([]);
   const [clientProfileDg, setClientProfileDg] = useState(false);
   const [clientSelected, setClientSelected] = useState(null);
+  const [customerProfileSelected, setCustomerProfileSelected] = useState(null);
   const [response, setResponse] = useState(null);
   const cookies = new Cookies();
   const navigate = useNavigate();
+  const promerClient = new PromerClient();
+  const acmaClient = new AcmaClient();
+
+  const handleError = async(error)=> {
+    const response = error?.response;
+
+    if (response.status === 401 && cookies.get('refresh_jwt')) {
+      await acmaClient.refresh().catch(error => { throw error });
+      window.location.reload();
+      setLoading(false);
+    }
+
+    if (response.status === 401 && !cookies.get('refresh_jwt')) {
+      setAlertProps({
+        show: true,
+        message: 'Tu sesión ha caducado, por favor inica sesión de nuevo',
+        type: 'warning'
+      })
+      setTimeout(() => {
+        navigate('/login');
+      }, 3500)
+      
+    }
+  }
 
   const findCustomers = async () => {
-    const promerClient = new PromerClient();
-    const acmaClient = new AcmaClient();
     try {
-      const customersReponse = await promerClient.findCustomers();
+      const customersReponse = await promerClient.findCustomers({});
       setCustomers(customersReponse);
       setLoading(false);
     } catch (error) {
-      const { status, message } = error?.response;
-
-      if (status === 401 && cookies.get('refresh_jwt')) {
-        await acmaClient.refresh().catch(error => { throw error });
-        window.location.reload();
-        setLoading(false);
-      }
-
-      if (status === 401 && !cookies.get('refresh_jwt')) {
-        setAlertProps({
-          show: true,
-          message: 'Tu sesión ha caducado',
-          type: 'error'
-        })
-        setTimeout(() => {
-          navigate('/');
-        }, 3000)
-        
-      }
+      await handleError(error);
     }
   }
 
@@ -484,8 +489,15 @@ export default function CustomerPage() {
     setUpdateDg(show);
   };
 
-  const openClientProfileDg = (client) => {
+  const openClientProfileDg = async (client) => {
+    const promerClient = new PromerClient();
     setClientProfileDg(true);
+    try {
+      const customerProfile = await promerClient.findCustomerProfile(client._id);
+      setCustomerProfileSelected(customerProfile)
+    } catch (error) {
+      await handleError(error);
+    }
     setClientSelected(client);
   };
 
@@ -674,7 +686,7 @@ export default function CustomerPage() {
                     )}
                   </Table>
                 </TableContainer>
-                <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} customerId={clientSelected?._id}/>
+                <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} customerProfile={customerProfileSelected}/>
               </Scrollbar>
 
               <TablePagination

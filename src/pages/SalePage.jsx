@@ -61,6 +61,7 @@ export default function SalePage() {
         limit: defaultLimitResults,
         skip: value
       });
+      console.log("======>", res.data.result)
       setPageResult(res.data.result);
       setActualPage(value)
       setPages(res.data.pages)
@@ -70,7 +71,6 @@ export default function SalePage() {
       console.error(error);
       setLoading(false);
     }
-    
   }
 
   if(loading) {
@@ -94,7 +94,7 @@ export default function SalePage() {
         {pageResult.map((content, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <SaleCard 
-              title={content.contract.landName} 
+              title={content?.contract?.landName} 
               content={content} 
             />
           </Grid>

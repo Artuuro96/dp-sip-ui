@@ -8,14 +8,15 @@ export class PromerClient {
     this.cookies = new Cookies();
     const token = this.cookies.get('jwt')
     this.axios = axios.create({
-      baseURL: 'http://localhost:3000/v1',
+      baseURL: 'http://localhost:3001/v1',
       headers: { 'Authorization': `Bearer ${token}`}
     });;
   }
 
   async findCustomers({
-    limit, skip, keyValue
+    limit = 10, skip = 0, keyValue = ''
   }) {
+    console.log(limit, skip, keyValue)
     const query = {
       params: {
         limit,
@@ -62,7 +63,7 @@ export class PromerClient {
 
     if (!keyValue || keyValue === '' || keyValue === undefined)
       delete query.params.keyValue
-    const response = await this.axios.get('/lands',query);
+    const response = await this.axios.get('/lands', query);
     return response;
   }
 
@@ -137,4 +138,15 @@ export class PromerClient {
     const response = await this.axios.get(`/customers/profile/${customerId}`);
     return response?.data
   }
+
+  async createPayment(payment) {
+    try {
+      const response = await this.axios.post('/payment', payment);
+      return response?.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
 }

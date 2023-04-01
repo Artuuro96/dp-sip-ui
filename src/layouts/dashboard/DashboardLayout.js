@@ -50,11 +50,6 @@ export default function DashboardLayout() {
 
   const refresh = async() => acmaClient.refresh();
 
-  console.log("=====", {
-    token,
-    refreshToken, loading
-  })
-
   if(!token && refreshToken && loading) {
     refresh()
       .then((response) => {

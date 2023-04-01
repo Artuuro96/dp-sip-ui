@@ -22,7 +22,7 @@ export default function SaleCard({ title, content }){
   ];
 
   const handleShowCredit = () => {
-    if(content.credit._id) {
+    if(content.credit?._id) {
       return (
         <p>
           <Grid item container direction="column" xs={12} >
@@ -71,13 +71,13 @@ export default function SaleCard({ title, content }){
       <CardHeader title={`Terreno: ${title}`} />
       <CardContent>
         <List disablePadding>
-            <ListItem key={content.customer.name} sx={{ py: 1, px: 0 }}>
+            <ListItem key={content.customer?.name} sx={{ py: 1, px: 0 }}>
               <ListItemText primary="Cliente:" />
-              <Typography variant="body2">{content.customer.name}</Typography>
+              <Typography variant="body2">{content.customer?.name}</Typography>
             </ListItem>
-            <ListItem key={content.contract.paymentType} sx={{ py: 1, px: 0 }}>
+            <ListItem key={content.contract?.paymentType} sx={{ py: 1, px: 0 }}>
               <ListItemText primary="Tipo de Pago:" />
-              <Typography variant="body2">{ content.contract.paymentType === 'CREDIT' ?  'CREDITO' : 'PAGO COMPLETO' }</Typography>
+              <Typography variant="body2">{ content.contract?.paymentType === 'CREDIT' ?  'CREDITO' : 'PAGO COMPLETO' }</Typography>
             </ListItem>
         </List>
         <p>{handleShowCredit()}</p>

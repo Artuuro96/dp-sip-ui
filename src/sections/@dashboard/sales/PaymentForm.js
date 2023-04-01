@@ -139,7 +139,6 @@ export default function PaymentForm(props) {
   const handleCreditData = () => {
     let credit = {}
     if(!isNil(endDateHelp) && (endDateHelp) && !isNaN(interestRate) && !isEmpty(interestRate)) {
-      console.log("if")
       credit = {
         startDate,
         endDate,
