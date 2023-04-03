@@ -8,7 +8,7 @@ export class PromerClient {
     this.cookies = new Cookies();
     const token = this.cookies.get('jwt')
     this.axios = axios.create({
-      baseURL: 'http://localhost:3000/v1',
+      baseURL: 'http://localhost:3001/v1',
       headers: { 'Authorization': `Bearer ${token}`}
     });;
   }
@@ -133,10 +133,21 @@ export class PromerClient {
       throw error;
     }
   }
+
+  async findCreditIdsByCustomerId(customerId) {
+    try {
+      const response = await this.axios.get(`/credit/customer/${customerId}`);
+      return response?.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   
-  async findCustomerProfile(customerId) {
-    const response = await this.axios.get(`/customers/profile/${customerId}`);
-    return response?.data
+  async findCustomerProfile(customerId, creditId) {
+    const response = await this.axios.get(`/customers/profile/${customerId}/credit/${creditId}`);
+    return response?.data;
   }
 
   async createPayment(payment) {

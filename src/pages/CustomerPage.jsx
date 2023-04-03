@@ -22,7 +22,7 @@ import {
 // components
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { filter } from 'lodash';
+import { filter, isEmpty } from 'lodash';
 import Cookies from 'universal-cookie';
 import { AcmaClient } from '../api/AcmaClient';
 import Iconify from '../components/iconify';
@@ -36,331 +36,6 @@ import Loader from '../components/common/Loader';
 import AlertMessage from '../components/common/AlertMessage';
 import { PromerClient } from '../api/PromerClient';
 
-
-const CUSTOMERLIST = [
-  {
-    "_id" : "640e4cff27b1984deed0s746c",
-    "deleted" : false,
-    "createdAt" : "2023-03-12T22:06:31.853+0000",
-    "createdBy" : "6ea11975-090d-443f-a8ed-95a544df3d11",
-    "updatedAt" : "2023-03-12T22:06:31.853+0000",
-    "name" : "Gabriela",
-    "lastName" : "Valenzuela",
-    "secondLastName" : "Martinez",
-    "email" : "gaby.valen@gmail.com",
-    "cellPhone" : 5541588339.0,
-    "phone" : 5541588339.0,
-    "rfc" : "ARO960",
-    "facebook" : "https://github.com/Artuuro96/dp-sip-server",
-    "address" : {
-        "country" : "Mexico",
-        "state" : "Estado de Mexico",
-        "city" : "Cuatitlan",
-        "town" : "El mirador",
-        "street" : "Lazaro cardenas",
-        "number" : "8",
-        "zip" : 4095
-    },
-    "birthday" : "1960-03-20T06:00:00.000+0000",
-    "behaviour" : 'SUPERDELAY',
-    "age": 30,
-    "gender": 'Mujer',
-    "avatar" : "https://github.com/Artuuro96/dp-sip-server",
-    "credit" : {
-      "creditNumber": 88787674321124,
-      "totalDebt": 350000,
-      "startDate": new Date('05/05/2022'),
-      "endDate": new Date('12/28/2028'),
-      "currentBalance": 266000,
-      "regularPayment": 3500,
-      "paymentDay": new Date('09/08/2022'),
-    },
-    "payments": [
-      {
-        "id": 1,
-        "createdAt": new Date('01/05/2022'),
-        "payment": 3500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 2,
-        "createdAt": new Date('02/05/2022'),
-        "payment": 3500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 3,
-        "createdAt": new Date('02/05/2022'),
-        "payment": 3500,
-        "createdBy": "Vendedor 3",
-        "method": "Efectivo"
-      },
-      {
-        "id": 4,
-        "createdAt": new Date('03/05/2022'),
-        "payment": 3500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 5,
-        "createdAt": new Date('04/05/2022'),
-        "payment": 3500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      }
-    ]
-  },
-  {
-    "_id" : "640e4cff27dhdhfue274742",
-    "deleted" : false,
-    "createdAt" : "2023-03-12T22:06:31.853+0000",
-    "createdBy" : "6ea11975-090d-443f-a8ed-95a544df3d11",
-    "updatedAt" : "2023-03-12T22:06:31.853+0000",
-    "name" : "Alfonso",
-    "lastName" : "Guzman",
-    "secondLastName" : "Salvador",
-    "email" : "josuers823@gmail.com",
-    "cellPhone" : 5541588339.0,
-    "phone" : 5541588339.0,
-    "rfc" : "ARO960",
-    "facebook" : "https://www.facebook.com/GuzmanPocho",
-    "address" : {
-        "country" : "Mexico",
-        "state" : "Estado de Mexico",
-        "city" : "Cuatitlan",
-        "town" : "El mirador",
-        "street" : "Lazaro cardenas",
-        "number" : "8",
-        "zip" : 54095
-    },
-    "birthday" : "1960-03-20T06:00:00.000+0000",
-    "behaviour" : 'DELAY',
-    "age": 25,
-    "gender": 'Hombre',
-    "avatar" : "https://github.com/Artuuro96/dp-sip-server",
-    "credit" : {
-      "creditNumber": 1932837246274,
-      "totalDebt": 230000,
-      "startDate": new Date('01/04/2022'),
-      "endDate": new Date('09/12/2026'),
-      "currentBalance": 180000,
-      "regularPayment": 5500,
-      "paymentDay": new Date('09/08/2022'),
-    },
-    "payments": [
-      {
-        "id": 1,
-        "createdAt": new Date('01/12/2022'),
-        "payment": 5500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 2,
-        "createdAt": new Date('02/12/2022'),
-        "payment": 5500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 3,
-        "createdAt": new Date('03/12/2022'),
-        "payment": 5500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 4,
-        "createdAt": new Date('04/12/2022'),
-        "payment": 5500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 5,
-        "createdAt": new Date('05/12/2022'),
-        "payment": 5500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 6,
-        "createdAt": new Date('06/12/2022'),
-        "payment": 5500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-    ]
-  },
-  {
-    "_id" : "640e4cff27b34584aczsd07124",
-    "deleted" : false,
-    "createdAt" : "2023-03-12T22:06:31.853+0000",
-    "createdBy" : "6ea11975-090d-443f-a8ed-95a544df3d11",
-    "updatedAt" : "2023-03-12T22:06:31.853+0000",
-    "name" : "Alicia",
-    "lastName" : "Cervantes",
-    "secondLastName" : "Molina",
-    "email" : "alicia.cervantes@gmail.com",
-    "cellPhone" : 5541588339.0,
-    "phone" : 5541588339.0,
-    "rfc" : "ARO960",
-    "facebook" : "https://www.facebook.com/profile.php?id=100002242847801",
-    "address" : {
-        "country" : "Mexico",
-        "state" : "Estado de Mexico",
-        "city" : "Cuatitlan",
-        "town" : "El mirador",
-        "street" : "Lazaro cardenas",
-        "number" : "8",
-        "zip" : 54095
-    },
-    "birthday" : "1960-03-20T06:00:00.000+0000",
-    "behaviour" : 'OK',
-    "age": 40,
-    "gender": 'Mujer',
-    "avatar" : "https://github.com/Artuuro96/dp-sip-server",
-    "credit" : {
-      "creditNumber": 88787674321124,
-      "totalDebt": 456000,
-      "startDate": new Date('05/05/2021'),
-      "endDate": new Date('02/08/2024'),
-      "currentBalance": 300000,
-      "regularPayment": 1500,
-      "paymentDay": new Date('09/08/2022'),
-    },
-    "payments": [
-      {
-        "id": 1,
-        "createdAt": new Date('01/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 2,
-        "createdAt": new Date('02/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 3,
-        "createdAt": new Date('03/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 4,
-        "createdAt": new Date('04/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 5,
-        "createdAt": new Date('05/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 6,
-        "createdAt": new Date('06/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 7,
-        "createdAt": new Date('07/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 8,
-        "createdAt": new Date('08/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-      {
-        "id": 9,
-        "createdAt": new Date('09/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 10,
-        "createdAt": new Date('10/12/2022'),
-        "payment": 1500,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      },
-    ]
-  },
-  {
-    "_id" : "640e4cffdhc737r8cn84deed07124",
-    "deleted" : false,
-    "createdAt" : "2023-03-12T22:06:31.853+0000",
-    "createdBy" : "6ea11975-090d-443f-a8ed-95a544df3d11",
-    "updatedAt" : "2023-03-12T22:06:31.853+0000",
-    "name" : "Fernando",
-    "lastName" : "Beltran",
-    "secondLastName" : "Olvera",
-    "email" : "fernando_beltran@gmail.com",
-    "cellPhone" : 5541588339.0,
-    "phone" : 5541588339.0,
-    "rfc" : "ARO960",
-    "facebook" : "https://github.com/Artuuro96/dp-sip-server",
-    "address" : {
-        "country" : "Mexico",
-        "state" : "Estado de Mexico",
-        "city" : "Cuatitlan",
-        "town" : "El mirador",
-        "street" : "Lazaro cardenas",
-        "number" : "8",
-        "zip" : 54095
-    },
-    "birthday" : "1960-03-20T06:00:00.000+0000",
-    "behaviour" : 'OK',
-    "age": 45,
-    "gender": 'Desconocido',
-    "avatar" : "https://github.com/Artuuro96/dp-sip-server",
-    "credit" : {
-      "creditNumber": 88787674321124,
-      "totalDebt": 760000,
-      "startDate": new Date('05/02/2022'),
-      "endDate": new Date('05/01/2028'),
-      "currentBalance": 240000,
-      "regularPayment": 2400,
-      "paymentDay": new Date('01/09/2023'),
-    },
-    "payments": [
-      {
-        "id": 1,
-        "createdAt": new Date('01/05/2021'),
-        "payment": 2400,
-        "createdBy": "Vendedor 1",
-        "method": "Efectivo"
-      },
-      {
-        "id": 2,
-        "createdAt": new Date('02/05/2021'),
-        "payment": 2400,
-        "createdBy": "Vendedor 2",
-        "method": "Efectivo"
-      }
-    ],
-  },
-]
-
 const TABLE_HEAD = [
   { id: 'name', label: 'Nombre', alignRight: false },
   { id: 'cellPhone', label: 'Celular', alignRight: false },
@@ -368,7 +43,6 @@ const TABLE_HEAD = [
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'behavior', label: 'Comportamiento', alignRight: false },
   { id: 'action', label: 'Acción', alignRight: false },
-  
 ];
 
 // ----------------------------------------------------------------------
@@ -420,6 +94,7 @@ export default function CustomerPage() {
   const [customers, setCustomers] = useState([]);
   const [clientProfileDg, setClientProfileDg] = useState(false);
   const [clientSelected, setClientSelected] = useState(null);
+  const [creditIds, setCreditIds] = useState([]);
   const [customerProfileSelected, setCustomerProfileSelected] = useState(null);
   const [response, setResponse] = useState(null);
   const cookies = new Cookies();
@@ -459,6 +134,32 @@ export default function CustomerPage() {
     }
   }
 
+  const getBehaviourStatus = (behaviour) => {
+    const behaviourInfo = {};
+    switch(behaviour) {
+      case 'OK':
+        behaviourInfo.icon = 'mdi:tick-circle';
+        behaviourInfo.color = '#54D62C';
+        break;
+      case 'DELAY':
+        behaviourInfo.icon = 'bi:exclamation-circle-fill';
+        behaviourInfo.color = '#ffd65b';
+        break;
+      case 'NOPAYMENT':
+        behaviourInfo.icon = 'gridicons:cross-circle';
+        behaviourInfo.color = 'FF4842';
+        break;
+      case 'BAD':
+        behaviourInfo.icon = 'gridicons:cross-circle';
+        behaviourInfo.color = '#FFC107';
+        break;
+      default:
+        behaviourInfo.icon = ''
+        behaviourInfo.color = ''
+    }
+    return behaviourInfo;
+  }
+
   const openAlert = (props) => {
     setAlertProps({
       ...props,
@@ -491,11 +192,24 @@ export default function CustomerPage() {
 
   const openClientProfileDg = async (client) => {
     const promerClient = new PromerClient();
-    setClientProfileDg(true);
+    setLoading(true);
     try {
-      const customerProfile = await promerClient.findCustomerProfile(client._id);
-      setCustomerProfileSelected(customerProfile)
+      const response = await promerClient.findCreditIdsByCustomerId(client._id);
+      if(isEmpty(response?.creditIds)) {
+        setCustomerProfileSelected({
+          credit: {},
+          customer: client,
+          payments: [],
+        })
+      } else {
+        const customerProfile = await promerClient.findCustomerProfile(client._id, response.creditIds[0]);
+        setCustomerProfileSelected(customerProfile);
+      }
+      setCreditIds(response.creditIds);
+      setLoading(false);
+      setClientProfileDg(true);
     } catch (error) {
+      setLoading(false)
       await handleError(error);
     }
     setClientSelected(client);
@@ -636,14 +350,12 @@ export default function CustomerPage() {
                             </TableCell>
 
                             <TableCell align="center">
-                              {
-                                behaviour === 'OK' ? 
-                                ( <Iconify icon="mdi:tick-circle" width={35} height={35} sx={{ color: '#54D62C' }}/> ) :
-                                behaviour === 'DELAY' ? 
-                                ( <Iconify icon="bi:exclamation-circle-fill" width={31} height={35} sx={{ color: '#FFC107' }}/> ) :
-                                ( <Iconify icon="gridicons:cross-circle" width={35} height={35} sx={{ color: '#FF4842' }}/> )
-                              }
-                              
+                              <Iconify 
+                                icon={getBehaviourStatus(behaviour)?.icon }
+                                width={35} 
+                                height={35} 
+                                sx={{ color: getBehaviourStatus(behaviour)?.color }}
+                              />
                             </TableCell>
 
                             <TableCell align="left">
@@ -686,7 +398,7 @@ export default function CustomerPage() {
                     )}
                   </Table>
                 </TableContainer>
-                <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} customerProfile={customerProfileSelected}/>
+                <ClientProfile open={clientProfileDg} handleCloseDg={closeClientProfileDg} customerProfile={customerProfileSelected} creditIds={creditIds}/>
               </Scrollbar>
 
               <TablePagination

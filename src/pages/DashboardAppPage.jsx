@@ -6,7 +6,7 @@ import { Grid, Container, Typography } from '@mui/material';
 import Cookies from 'universal-cookie';
 import jwtDecode from 'jwt-decode';
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 // import Iconify from '../components/iconify';
 // sections
 import {
@@ -32,6 +32,7 @@ export default function DashboardAppPage() {
   const userInfo = jwtDecode(cookies.get('jwt'));
   const [context, setContext] = useState({});
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [alertProps, setAlertProps] = useState({
     show: false
   })
@@ -57,8 +58,10 @@ export default function DashboardAppPage() {
           type: 'warning',
           handleClose: () => setAlertProps({ show: false })
         });
-        await acmaClient.refresh();
-        console.log(message)
+        await acmaClient.refresh().catch((error) => {
+          console.error(error);
+          navigate('/login');
+        });
       } else {
         setAlertProps({
           message,

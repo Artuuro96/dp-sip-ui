@@ -72,7 +72,6 @@ export default function SalePage() {
         limit: defaultLimitResults,
         skip: value
       });
-      console.log("======>", res.data.result)
       setPageResult(res.data.result);
       setActualPage(value)
       setPages(res.data.pages)
