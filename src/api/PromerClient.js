@@ -8,7 +8,7 @@ export class PromerClient {
     this.cookies = new Cookies();
     const token = this.cookies.get('jwt')
     this.axios = axios.create({
-      baseURL: 'http://localhost:3001/v1',
+      baseURL: 'http://localhost:3000/v1',
       headers: { 'Authorization': `Bearer ${token}`}
     });;
   }

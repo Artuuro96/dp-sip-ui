@@ -7,32 +7,26 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
-import { DialogActions, DialogContent, Dialog } from '@mui/material';
+import { Alert, DialogActions, DialogContent, Dialog, Snackbar } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { isEmpty } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import CreateContract from './CreateContract';
 import PaymentForm from './PaymentForm';
 import Review from './ReviewForm';
 import { PromerClient } from '../../../api/PromerClient';
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 const steps = ['Creacion de venta', 'Creacion de credito', 'Confirmacion'];
 
 
 
 export default function NewSaleDg({openSaleDg, handleSaleDg }) {
+  
+  const [saleFinished, setSaleFinished] = useState(false)
+
+  const [messageEnd, setMessageEnd] = useState('Error')
+  const [openAlert, setOpenAlert] = useState(false)
+  const [classAlert, setclassAlert] = useState('error')
+
   const [landToSell, setLandToSell] = useState('');
   const [customerToSell, setCustomerToSell] = useState('');
   const [paymentType, setPaymentType] = useState('');
@@ -41,7 +35,11 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
   const [contractCreated, setContractCreated] = useState({});
   const [creditCreated, setCreditCreated] = useState({});
 
+  const [beforeContractCreated, setBeforeContractCreated] = useState({});
+  const [beforeCreditCreated, setBeforeCreditCreated] = useState({});
+
   const [creditToCreate, setCreditToCreate] = useState({});
+  
 
   function getStepContent(step) {
     switch (step) {
@@ -66,8 +64,8 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
         return <Review 
         landToSell={landToSell}
         customerToSell={customerToSell}
-        contractCreated={contractCreated}
-        creditCreated={creditCreated}
+        beforeContractCreated={beforeContractCreated}
+        beforeCreditCreated={beforeCreditCreated}
         />;
       default:
         throw new Error('Unknown step');
@@ -85,25 +83,22 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
       const res = await promerClient.createContract(contract);
       if (!isEmpty(res._id)) {
         setContractCreated(res);
-        console.log(res)
-        if(res.paymentType === "FULLPAYMENT") {
-          setActiveStep(activeStep + 2);
-        } else {
-          setActiveStep(activeStep + 1);
-        }
+        return res
       }
+      return null
     } catch (error) {
       console.error(error);
+      return null
     }
   }
 
-  const createCredit = async () => {
+  const createCredit = async (contract) => {
     const promerClient = new PromerClient();
     try {
       const credit = {
-        contractId: contractCreated._id,
-        customerId: contractCreated.customerId,
-        landId: contractCreated.landId,
+        contractId: contract._id,
+        customerId: contract.customerId,
+        landId: contract.landId,
         startDate: creditToCreate.startDate,
         endDate: creditToCreate.endDate,
         status: 'ASSIGNED',
@@ -116,23 +111,81 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
       const res = await promerClient.createCredit(credit);
       if (!isEmpty(res._id)) {
         setCreditCreated(res);
-        console.log(res)
-        setActiveStep(2);
+        return res
       }
+      return null
     } catch (error) {
       console.error(error);
+      return null
     }
+  }
+
+  const setContractBeforeCreate = () => {
+    const contract = {
+      landId: landToSell._id,
+      customerId: customerToSell._id,
+      paymentType,
+    }
+    setBeforeContractCreated(contract);
+  }
+
+  const setCreditBeforCreate = () => {
+    const credit = {
+      customerId: customerToSell._id,
+      landId: landToSell._id,
+      startDate: creditToCreate.startDate,
+      endDate: creditToCreate.endDate,
+      status: 'ASSIGNED',
+      termType: creditToCreate.termType,
+      termQuantity: Number(creditToCreate.termQuantity),
+      paymentDay:  Number(creditToCreate.paymentDay),
+      totalDebt:  Number(landToSell.price),
+      interestRate:  Number(creditToCreate.interestRate),
+    }
+    setBeforeCreditCreated(credit)
   }
 
   const handleNext = async () => {
     if(activeStep === 0) {
-       await createContract()
-       return
+      setContractBeforeCreate()
+      if(paymentType === "FULLPAYMENT") {
+        setActiveStep(activeStep + 2);
+      } else {
+        setActiveStep(activeStep + 1);
+      }
+      return
     }
     if(activeStep === 1) {
-      await createCredit()
+      setCreditBeforCreate()
+      setActiveStep(2);
    }
   };
+
+  const handleBack = async () => {
+    if(paymentType === 'CREDIT' && activeStep === 2)
+      setActiveStep(activeStep - 1);
+    if(activeStep === 1) 
+      setActiveStep(0);
+  };
+
+  const handleCreateSale = async () => {
+    const resContract = await createContract();
+    if(paymentType === 'CREDIT' && !isNil(resContract._id)) {
+      await createCredit(resContract);
+    }
+    if (resContract._id) {
+      setOpenAlert(true);
+      setMessageEnd('Creacion de contrato Exitosa');
+      setclassAlert('success');
+      setSaleFinished(true)
+      setOpenAlert(true);
+    }
+      
+  };
+
+    const handleCloseAlert = () => {
+      setOpenAlert(false);
+    };
 
   const cleanAtClose = () => {
     setTimeout(() => {
@@ -142,12 +195,14 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
       setContractCreated({});
       setCreditCreated({});
       setCreditToCreate({});
+      setBeforeContractCreated({});
+      setBeforeCreditCreated({});
       setActiveStep(0);
+      setSaleFinished(false);
     }, 500);
   }
 
   const handleValidateNext = () => {
-    console.log(creditToCreate, activeStep)
     if((!isEmpty(landToSell) && !isEmpty(customerToSell) && paymentType !== '') && activeStep === 0)
       return false;
     if(creditToCreate.created && activeStep === 1) 
@@ -165,8 +220,32 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
     return <></>
   }
 
+  const handleCreateContractCreditButton = () => {
+    if(activeStep === 2 && !saleFinished) {
+      if(handleValidateNext()) {
+        return (
+          <Button variant="contained" onClick={handleCreateSale} sx={{ mt: 3, ml: 1 }} >
+              { 'Emitir venta' }
+          </Button>
+        )
+      }
+    }
+    return <></>
+
+  }
+
+  const handleGoBackButton = () => {
+    if(activeStep !== 0  && !saleFinished )
+      return (
+        <Button  onClick={handleBack} sx={{ mt: 3, ml: 1 }} >
+            {'Regresar'}
+        </Button>
+      )
+    return <></>
+  }
+
   return (
-    <Dialog fullWidth="md" maxWidth="md" open={openSaleDg} onClose={() => handleSaleDg(false)}>
+    <Dialog fullWidth="md" maxWidth="md" open={openSaleDg} onClose={() => {handleSaleDg(false); cleanAtClose()} }>
       <DialogContent>
         <Container component="main" maxWidth="md">
           <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
@@ -184,8 +263,9 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
               <>
                 {getStepContent(activeStep)}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    {handleGoBackButton()}
                     {handleNextShowButton()}
-                  
+                    {handleCreateContractCreditButton()}
                 </Box>
               </>
             }
@@ -195,6 +275,11 @@ export default function NewSaleDg({openSaleDg, handleSaleDg }) {
       <DialogActions>
         <Button onClick={() => {handleSaleDg(false); cleanAtClose()}}>Cerrar</Button>
       </DialogActions>
+      <Snackbar open={openAlert} autoHideDuration={6000}>
+        <Alert  onClose={handleCloseAlert} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} severity={classAlert} sx={{ width: '100%' }}>
+          {messageEnd}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 }

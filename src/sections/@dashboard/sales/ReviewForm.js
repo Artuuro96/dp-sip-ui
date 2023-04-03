@@ -5,13 +5,15 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Grid from '@mui/material/Grid';
+import { format } from 'date-fns';
 
 
 export default function Review(props) {
-  const {landToSell, customerToSell, contractCreated, creditCreated} = props;
+  const {landToSell, customerToSell, beforeContractCreated, beforeCreditCreated} = props;
+  console.log(props.beforeCreditCreated)
 
   const handleIsCredit = () => {
-    if(contractCreated.paymentType === 'CREDIT' )
+    if(beforeContractCreated.paymentType === 'CREDIT' )
       return (
         <>
           <Grid item container direction="column" xs={12} >
@@ -19,37 +21,37 @@ export default function Review(props) {
                 Resumen credito
               </Typography>
               <List disablePadding>
-                <ListItem key={creditCreated.paymentDay} sx={{ py: 1, px: 0 }}>
+                <ListItem key="paymentDay" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Dia de pago:"  />
-                  <Typography variant="body2">{creditCreated.paymentDay}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.paymentDay}</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.startDate} sx={{ py: 1, px: 0 }}>
+                <ListItem key="startDate" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Fecha de inicio:"  />
-                  <Typography variant="body2">{creditCreated.startDate}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.startDate ? format(beforeCreditCreated.startDate, 'MM/dd/yyyy') : '' }</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.endDate} sx={{ py: 1, px: 0 }}>
+                <ListItem key="endDate" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Fecha fin:"  />
-                  <Typography variant="body2">{creditCreated.endDate}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.endDate ? format(beforeCreditCreated.endDate, 'MM/dd/yyyy') : '' }</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.termType} sx={{ py: 1, px: 0 }}>
+                <ListItem key="termType" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Tipo de pago:"  />
-                  <Typography variant="body2">{creditCreated.termType}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.termType}</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.termQuantity} sx={{ py: 1, px: 0 }}>
+                <ListItem key="termQuantity" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Cantidad de pagos:"  />
-                  <Typography variant="body2">{creditCreated.termQuantity}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.termQuantity}</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.status} sx={{ py: 1, px: 0 }}>
+                <ListItem key="status" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Estado del credito:"  />
-                  <Typography variant="body2">{creditCreated.status}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.status}</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.interestRate} sx={{ py: 1, px: 0 }}>
+                <ListItem key="interestRate" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Tasa de interés:"  />
-                  <Typography variant="body2">{creditCreated.interestRate}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.interestRate}</Typography>
                 </ListItem>
-                <ListItem key={creditCreated.totalDebt} sx={{ py: 1, px: 0 }}>
+                <ListItem key="totalDebt" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Deuda total:"  />
-                  <Typography variant="body2">{creditCreated.totalDebt}</Typography>
+                  <Typography variant="body2">{beforeCreditCreated.totalDebt}</Typography>
                 </ListItem>
               </List>
           </Grid>
@@ -65,13 +67,9 @@ export default function Review(props) {
         Resumen de creacion de contrato
       </Typography>
       <List disablePadding>
-          <ListItem key={contractCreated._id} sx={{ py: 1, px: 0 }}>
-            <ListItemText primary="Numero de Contrato:" />
-            <Typography variant="body2">{contractCreated._id}</Typography>
-          </ListItem>
-          <ListItem key={contractCreated.paymentType} sx={{ py: 1, px: 0 }}>
+          <ListItem key={beforeContractCreated.paymentType} sx={{ py: 1, px: 0 }}>
             <ListItemText primary="Tipo de Pago:"  />
-            <Typography variant="body2">{contractCreated.paymentType}</Typography>
+            <Typography variant="body2">{beforeContractCreated.paymentType}</Typography>
           </ListItem>
           <ListItem key={landToSell.name} sx={{ py: 1, px: 0 }}>
             <ListItemText primary="Nombre del terreno vendido:"  />
@@ -92,7 +90,6 @@ export default function Review(props) {
       </List>
       <Grid container spacing={2}>
         {handleIsCredit()}
-        
       </Grid>
     </>
   );

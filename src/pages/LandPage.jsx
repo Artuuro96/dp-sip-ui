@@ -58,7 +58,7 @@ export default function ProductsPage() {
   const [actualPage, setActualPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [totalLands, setTotalLands] = useState(0);
-  const [defaultLimitResults, setDefaultLimitResults] = useState(2);
+  const [defaultLimitResults, setDefaultLimitResults] = useState(10);
 
   const [searchText, setSearchText] = useState('');
 

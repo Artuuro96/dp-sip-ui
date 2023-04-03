@@ -6,8 +6,12 @@ import {
   Button,
   Pagination,
   PaginationItem,
-  Link
+  Link,
+  Paper,
+  TextField,
+  IconButton
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { useState, useEffect } from 'react';
 import NewSaleDg from '../sections/@dashboard/sales/NewSaleDg';
 import SaleCard from '../sections/@dashboard/sales/SaleCard';
@@ -23,20 +27,27 @@ export default function SalePage() {
   const [actualPage, setActualPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [totalContract, setTotalContract] = useState(0);
-  const [defaultLimitResults, setDefaultLimitResults] = useState(2);
+  const [defaultLimitResults, setDefaultLimitResults] = useState(10);
 
   const [openSaleDg, setOpenSaleDg] = useState(false);
+
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     findAllContracts();
   }, []);
+
+  const handleSearch = (event) => {
+    setSearchText(event.target.value);
+  };
 
   const findAllContracts = async () => {
     const promerClient = new PromerClient();
     try {
       const res = await promerClient.findAllContracts({
         limit: defaultLimitResults,
-        skip: actualPage
+        skip: actualPage,
+        keyValue: searchText
       });
       setPageResult(res.data.result);
       setActualPage(res.data.page)
@@ -90,7 +101,23 @@ export default function SalePage() {
         </Button>
       </Stack>
         <NewSaleDg handleSaleDg={handleSaleDg} openSaleDg={openSaleDg} />
-        <SaleCardListHeader />
+        <Paper
+          component="form"
+          sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 800 }}
+          style={{ textAlign: 'right' }}
+        >
+        <TextField 
+          id="outlined-search" 
+          label="Buscar por nombre" 
+          type="search" 
+          fullWidth 
+          value={searchText}
+          onChange={handleSearch} 
+        />
+        <IconButton type="button" sx={{ p: '10px' }} onClick={findAllContracts} aria-label="search">
+            <SearchIcon />
+        </IconButton>
+        </Paper>
         {pageResult.map((content, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <SaleCard 

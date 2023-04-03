@@ -12,14 +12,14 @@ import { isNil, isNaN, isEmpty } from 'lodash';
 
 export default function PaymentForm(props) {
   let endDateHelp = ''
-  const {landToSell, customerToSell, paymentType, contractCreated, creditToCreate, setCreditToCreate, } = props;
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const {landToSell, customerToSell, paymentType, contractCreated, creditToCreate, setCreditToCreate} = props;
+  const [startDate, setStartDate] = useState(creditToCreate.startDate ? creditToCreate.startDate : null);
+  const [endDate, setEndDate] = useState(creditToCreate.endDate ? creditToCreate.endDate : null);
 
-  const [termType, setTermType] = useState('');
-  const [paymentDay, setPaymentDay] = useState();
-  const [termQuantity, setTermQuantity] = useState();
-  const [interestRate, setInterestRate] = useState();
+  const [termType, setTermType] = useState(creditToCreate.termType ? creditToCreate.termType : '');
+  const [paymentDay, setPaymentDay] = useState(creditToCreate.paymentDay ? creditToCreate.paymentDay : '');
+  const [termQuantity, setTermQuantity] = useState(creditToCreate.termQuantity ? creditToCreate.termQuantity : '');
+  const [interestRate, setInterestRate] = useState(creditToCreate.interestRate ? creditToCreate.interestRate : '');
 
   const termTypes = [
     { value: 'MONTHLY', label: 'MENSUAL' },
@@ -27,8 +27,11 @@ export default function PaymentForm(props) {
   ];
 
   const handleStartDateChange = (date) => {
-    setStartDate(date)
-  };
+    const timestamp = Date.parse(date);
+
+    if (isNaN(timestamp) === false)
+      setStartDate(date);
+  }; 
 
   const handleEndDateChange = (date) => {
     setEndDate(new Date(date));
