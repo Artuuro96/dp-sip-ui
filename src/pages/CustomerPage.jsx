@@ -77,7 +77,7 @@ function applySortFilter(array, comparator, query) {
 
 
 export default function CustomerPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [openCustomerDg, setOpenCustomerDg] = useState(false);
   const [personName, setPersonName] = useState([]);
   const [updateDg, setUpdateDg] = useState(false);
@@ -126,6 +126,7 @@ export default function CustomerPage() {
 
   const findCustomers = async () => {
     try {
+      setLoading(true);
       const customersReponse = await promerClient.findCustomers({});
       setCustomers(customersReponse);
       setLoading(false);
@@ -351,7 +352,7 @@ export default function CustomerPage() {
 
                             <TableCell align="center">
                               <Iconify 
-                                icon={getBehaviourStatus(behaviour)?.icon }
+                                icon={ getBehaviourStatus(behaviour)?.icon }
                                 width={35} 
                                 height={35} 
                                 sx={{ color: getBehaviourStatus(behaviour)?.color }}
@@ -438,7 +439,7 @@ export default function CustomerPage() {
 
             <MenuItem sx={{ color: 'error.main' }}>
               <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-              Delete
+              Eliminar
             </MenuItem>
           </Popover>
           <UpdateCustomerDg

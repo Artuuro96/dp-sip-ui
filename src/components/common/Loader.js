@@ -9,10 +9,10 @@ Loader.propTypes = {
   show: PropTypes.bool
 }
 
-export default function Loader({ show = true }) {
+export default function Loader({ show }) {
   return (
     <>
-      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={show}>
+      <Backdrop sx={{ color: '#fff', zIndex: 999 }} open={show}>
         <CircularProgress color="inherit" />
       </Backdrop>
     </>

@@ -66,11 +66,12 @@ const StyledIcon = styled('div')(({ theme }) => ({
 export default function ClientProfile({ open, handleCloseDg, customerProfile, creditIds}) {
   const [page, setPage] = useState(0);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openPaymentDg, setOpenPaymentDg] = useState(false);
   const [payment, setPayment] = useState('');
   const [advance, setAdvance] = useState('');
+  const [credId, setCredId] = useState(creditIds[0]);
   const [creditIdentifiers, setCreditIdentifiers] = useState([]);
   const [alertProps, setAlertProps] = useState({
     show: false
@@ -165,6 +166,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
     try {
       const customerProfile = await promerClient.findCustomerProfile(customerId, creditId);
       setProfile(customerProfile);
+      setCredId(creditId);
       setLoading(false);
     } catch (error) {
       console.log(error)
@@ -195,12 +197,13 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
     }
     await new Promise(resolve => setTimeout(resolve, 2000));
     setLoading(false);
+    handlePaymentDg(false);
+    await findCustomerProfile(profile.customer._id, profile.credit._id);
     setAlertProps({
       message: `Pago registrado exitosamente ${res._id}`,
       type: 'success',
       handleClose: () => setAlertProps({ show: false })
     });
-    handlePaymentDg(false);
   }
 
   const handlePaymentDg = (show) => {
@@ -244,8 +247,8 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
 
   return (
     <>
-      <AlertMessage alertProps={alertProps}/>
       <Dialog open={openPaymentDg} onClose={handlePaymentDg}>
+        <Loader show={loading} />
         <DialogTitle>Nuevo Pago</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -303,6 +306,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
           </Toolbar>
         </AppBar>
         <Box height="100vh" sx={{backgroundColor: '#F4F6F8'}}>
+          <AlertMessage alertProps={alertProps}/>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Card sx={{ m: 2 }}>
@@ -347,7 +351,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                     sx= {{mt: 1.1, mr: 1.5, backgroundColor: "061B64"}} 
                     startIcon={<Iconify icon="eva:plus-fill" />} 
                     onClick={() => handlePaymentDg(true)}
-                    disabled = {isEmpty(profile?.payments)}
+                    disabled = {isEmpty(profile?.credit)}
                   >
                     Nuevo Pago
                   </Button>
@@ -443,7 +447,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                       <Select
                         labelId="demo-select-small"
                         id="demo-select-small"
-                        value={creditIdentifiers[0]}
+                        value={credId}
                         label="Número de Crédito"
                       >
                         {creditIdentifiers?.map(creditId => (

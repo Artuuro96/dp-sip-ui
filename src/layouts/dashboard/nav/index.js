@@ -24,7 +24,7 @@ const StyledAccount = styled('div')(({ theme }) => ({
   alignItems: 'center',
   padding: theme.spacing(2, 2.5),
   borderRadius: Number(theme.shape.borderRadius) * 1.5,
-  backgroundColor: alpha(theme.palette.grey[500], 0.12),
+  backgroundColor: alpha(theme.palette.grey[500], 0.30),
 }));
 
 // ----------------------------------------------------------------------
@@ -52,23 +52,23 @@ export default function Nav({ openNav, onCloseNav, userInfo }) {
       sx={{
         height: 1,
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
-        backgroundColor: '#DFE3E8',
+        backgroundColor: '#2065D1',
       }}
     >
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
         <Logo />
-      </Box>
+    </Box> 
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none">
           <StyledAccount>
             <Avatar alt="photoURL" />
 
             <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {userInfo.name}
+              <Typography variant="subtitle2" sx={{ color: 'white' }}>
+                {userInfo.name} 
               </Typography>
 
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              <Typography variant="body2" sx={{ color: 'white' }}>
                 {userInfo.roles[0].name}
               </Typography>
             </Box>
