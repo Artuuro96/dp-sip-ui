@@ -120,7 +120,6 @@ export default function CustomerPage() {
       setTimeout(() => {
         navigate('/login');
       }, 3500)
-      
     }
   }
 

@@ -55,17 +55,14 @@ export default function Nav({ openNav, onCloseNav, userInfo }) {
         backgroundColor: '#2065D1',
       }}
     >
-      <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
-        <Logo />
-    </Box> 
+      <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }} />
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none">
           <StyledAccount>
-            <Avatar alt="photoURL" />
 
             <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: 'white' }}>
-                {userInfo.name} 
+              <Typography variant="h7" sx={{ color: 'white', fontWeight: 'fontWeightBold'  }}>
+                {userInfo?.name} {userInfo?.lastName}
               </Typography>
 
               <Typography variant="body2" sx={{ color: 'white' }}>

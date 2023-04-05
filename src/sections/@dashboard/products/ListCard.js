@@ -512,7 +512,7 @@ export default function ListCard({ product }) {
 
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Typography> 
-              {street} Mz{square} {number}, {town}, {zip} {city}, {state}, {country}
+              {street} Mz {square} Lt {number}, {town}, {zip} {city}, {state}, {country}
             </Typography>
            
           </Stack>
@@ -522,8 +522,33 @@ export default function ListCard({ product }) {
             marginLeft: 1,
             alignContent: 'center',
           }}>
-              <Chip label={size} variant="outlined" color='primary'/>
-              <Chip label={`$${calculatePricePerMeter(price, size)  }/mt`} color='primary' variant="outlined" sx={{marginLeft: 1}} />
+            <Chip
+              label={
+                <Box sx={{ display: "inline-flex" }}>
+                  {size} mt
+                  <Box sx={{ marginLeft: "1px", fontSize: "12px", lineHeight: "1" }}>
+                  2
+                  </Box>
+                </Box>
+              }
+              color="primary"
+              variant="outlined"
+              sx={{ marginLeft: 1 }}
+            />
+            <Chip
+              label={
+                <Box sx={{ display: "inline-flex" }}>
+                  ${calculatePricePerMeter(price, size)}
+                  /mt
+                  <Box sx={{ marginLeft: "1px", fontSize: "12px", lineHeight: "1" }}>
+                  2
+                  </Box>
+                </Box>
+              }
+              color="primary"
+              variant="outlined"
+              sx={{ marginLeft: 1 }}
+            />         
           </Typography>
         </Grid>
         <Divider orientation="vertical" flexItem style={{ border: `1px solid`}}/>

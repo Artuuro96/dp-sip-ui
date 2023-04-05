@@ -24,6 +24,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  IconButton,
   Container,
 } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
@@ -34,6 +35,8 @@ import PropTypes from 'prop-types';
 import Cookies from 'universal-cookie';
 import { styled } from '@mui/material/styles';
 import { isEmpty } from 'lodash';
+import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom';
 import { PromerClient } from '../../../api/PromerClient';
 import Iconify from '../../../components/iconify';
 import { fCurrency } from '../../../utils/formatNumber';
@@ -64,6 +67,7 @@ const StyledIcon = styled('div')(({ theme }) => ({
 }));
 
 export default function ClientProfile({ open, handleCloseDg, customerProfile, creditIds}) {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -80,6 +84,29 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
   const cookies = new Cookies();
   const acmaClient = new AcmaClient();
   
+  const handleError = async(error)=> {
+    const response = error?.response;
+
+    if (response.status === 401 && cookies.get('refresh_jwt')) {
+      await acmaClient.refresh().catch(error => { throw error });
+      window.location.reload();
+      setLoading(false);
+    }
+
+    if (response.status === 401 && !cookies.get('refresh_jwt')) {
+      setAlertProps({
+        show: true,
+        message: 'Tu sesión ha caducado, por favor inica sesión de nuevo',
+        type: 'warning'
+      })
+      setTimeout(() => {
+        navigate('/login');
+      }, 3500)
+    }
+  }
+
+
+  
   useEffect(() => {
     if(customerProfile && customerProfile.customer) {
       setProfile(customerProfile);
@@ -87,6 +114,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
 
     if(creditIds) {
       setCreditIdentifiers(creditIds);
+      setCredId(creditIds[0])
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerProfile, creditIds])
@@ -97,7 +125,16 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
   };
   
   const handleChangePayment = (event) => {
-    setPayment(event.target.value);
+    const advanceQuantity = Number(event.target.value);
+    const nextPayment = Number(profile?.credit?.nextPayment);
+
+    if(nextPayment && advanceQuantity > nextPayment) {
+      setAdvance((advanceQuantity - nextPayment).toFixed(2));
+      setPayment(nextPayment);
+    } else {
+      setAdvance(0);
+      setPayment(event.target.value);
+    }
   }
 
   const handleChangeAdvance = (event) => {
@@ -170,15 +207,15 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
       setLoading(false);
     } catch (error) {
       console.log(error)
-      // await handleError(error);
+      await handleError(error);
       setLoading(false);
     }
   }
 
   const createNewPayment = async (handlePaymentDg) => {
     const newPaymentReq = {
-      quantity: parseInt(payment, 10),
-      advance: 0,
+      quantity: parseFloat(payment, 10),
+      advance: parseFloat(advance, 10),
       creditId: profile.credit._id,
       customerId: profile.customer._id,
       landId: profile.credit.landId,
@@ -207,6 +244,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
   }
 
   const handlePaymentDg = (show) => {
+    setAdvance(0);
     setOpenPaymentDg(show);
   };
 
@@ -270,9 +308,10 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
             margin="normal"
             required
             fullWidth
-            id="price"
+            id="advance"
+            value={advance}
             label="Adelanto"
-            name="price"
+            name="advance"
             autoComplete="advance"
             onChange={handleChangeAdvance}
           />
@@ -294,9 +333,14 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
       > 
         <AppBar sx={{ position: 'relative', backgroundColor: 'primary' }}>
           <Toolbar>
-            <Button autoFocus color="inherit" variant="contained" onClick={handleCloseDg}>
-              Cerrar
-            </Button>
+          <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleCloseDg}
+              aria-label="close"
+            >
+              <CloseIcon />
+            </IconButton>
             <Typography sx={{ ml: 2, flex: 1, fontSize: 30 }} variant="h6" component="div">
               Perfil del Cliente
             </Typography>
@@ -351,7 +395,7 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                     sx= {{mt: 1.1, mr: 1.5, backgroundColor: "061B64"}} 
                     startIcon={<Iconify icon="eva:plus-fill" />} 
                     onClick={() => handlePaymentDg(true)}
-                    disabled = {isEmpty(profile?.credit)}
+                    disabled = {isEmpty(profile?.credit) || profile?.credit?.nextPayment === 0}
                   >
                     Nuevo Pago
                   </Button>
@@ -435,7 +479,6 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                         right: 16,
                         position: 'absolute',
                         textTransform: 'uppercase',
-                        
                       }}
                     >
                       {getCreditStatus(profile?.credit?.status)?.status}
