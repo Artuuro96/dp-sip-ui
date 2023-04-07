@@ -26,6 +26,15 @@ import {
   Select,
   IconButton,
   Container,
+  ListItemAvatar,
+  ListItemText,
+  List,
+  ListItem,
+  Avatar,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -36,7 +45,13 @@ import Cookies from 'universal-cookie';
 import { styled } from '@mui/material/styles';
 import { isEmpty } from 'lodash';
 import CloseIcon from '@mui/icons-material/Close';
+import ImageIcon from '@mui/icons-material/Image';
+import CalendarMonthTwoToneIcon from '@mui/icons-material/CalendarMonthTwoTone';
+import FacebookTwoToneIcon from '@mui/icons-material/FacebookTwoTone';
+import PhoneIphoneTwoToneIcon from '@mui/icons-material/PhoneIphoneTwoTone';
+import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import { useNavigate } from 'react-router-dom';
+import { getCurrentPaymentDate } from '../../../utils/calculatePaymentDay';
 import { PromerClient } from '../../../api/PromerClient';
 import Iconify from '../../../components/iconify';
 import { fCurrency } from '../../../utils/formatNumber';
@@ -79,7 +94,10 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
   const [creditIdentifiers, setCreditIdentifiers] = useState([]);
   const [alertProps, setAlertProps] = useState({
     show: false
-  })
+  });
+  const [anotherQuantity, setAnotherQuantity] = useState(false);
+  const [totalPayment, setTotalPayment] = useState(true);
+  const [disableTotalPay, setDisableTotalPay] = useState(true);
   const promerClient = new PromerClient();
   const cookies = new Cookies();
   const acmaClient = new AcmaClient();
@@ -123,28 +141,29 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
-  
-  const handleChangePayment = (event) => {
-    const advanceQuantity = Number(event.target.value);
-    const nextPayment = Number(profile?.credit?.nextPayment);
-
-    if(nextPayment && advanceQuantity > nextPayment) {
-      setAdvance((advanceQuantity - nextPayment).toFixed(2));
-      setPayment(nextPayment);
-    } else {
-      setAdvance(0);
-      setPayment(event.target.value);
-    }
-  }
 
   const handleChangeAdvance = (event) => {
     setAdvance(event.target.value);
+    setPayment(event.target.value);
   }
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+  const onAnotherQuantity = () => {
+    setTotalPayment(false);
+    setDisableTotalPay(false);
+    setAnotherQuantity(true);
+  }
+
+  const onTotalPayment = () => {
+    setAnotherQuantity(false);
+    setTotalPayment(true);
+    setDisableTotalPay(true);
+    setPayment(Number(profile?.credit?.nextPayment));
+  }
 
   const getBehaviourStatus = (behaviour) => {
     const behaviourInfo = {};
@@ -215,7 +234,6 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
   const createNewPayment = async (handlePaymentDg) => {
     const newPaymentReq = {
       quantity: parseFloat(payment, 10),
-      advance: parseFloat(advance, 10),
       creditId: profile.credit._id,
       customerId: profile.customer._id,
       landId: profile.credit.landId,
@@ -285,36 +303,36 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
 
   return (
     <>
-      <Dialog open={openPaymentDg} onClose={handlePaymentDg}>
+      <Dialog maxWidth='sm' fullWidth open={openPaymentDg} onClose={handlePaymentDg}>
         <Loader show={loading} />
         <DialogTitle>Nuevo Pago</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <Typography variant="h8" component="div">
-              <b>Pago Sugerido: {fCurrency(profile?.credit?.nextPayment)}</b>
-            </Typography>
+            <FormControl>
+              <FormLabel>Seleccione la opción deseada: </FormLabel>
+                <FormControlLabel name="totalPayment" checked={totalPayment} value={profile?.credit?.nextPayment} control={<Radio />} onClick={(event) => onTotalPayment(event)} label={
+                  <Typography variant="h8" component="div">
+                    <b>Total a Pagar: {fCurrency(profile?.credit?.nextPayment)}</b>
+                  </Typography>
+                }/>
+                <FormControlLabel name="anotherQuantity" checked={anotherQuantity} value={anotherQuantity} control={<Radio />} onClick={(event) => onAnotherQuantity(event)} label={
+                  <Typography variant="h8" component="div">
+                    <b>Otra Cantidad</b>
+                  </Typography>
+                }/>
+            </FormControl>
+            <TextField
+                margin="normal"
+                fullWidth
+                id="advance"
+                disabled={disableTotalPay}
+                value={advance}
+                label="Cantidad"
+                name="advance"
+                autoComplete="advance"
+                onChange={handleChangeAdvance}
+              />
           </DialogContentText>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="payment"
-            label="Pago"
-            name="payment"
-            autoComplete="payment"
-            onChange={handleChangePayment}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="advance"
-            value={advance}
-            label="Adelanto"
-            name="advance"
-            autoComplete="advance"
-            onChange={handleChangeAdvance}
-          />
         </DialogContent>
         <DialogActions>
           <Button color="error" onClick={() => handlePaymentDg(false)}>
@@ -357,19 +375,21 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                 <Typography sx={{ ml: 2, flex: 1 }} variant="h4" component="div">
                     {profile?.customer.name} {profile?.customer.lastName} {profile?.customer.secondLastName}
                   </Typography>
-                  <Typography sx={{ ml: 2, flex: 1 }} component="div">
-                    <Iconify icon="material-symbols:calendar-month" />
-                    {fDate(profile?.customer?.birthday)}
-                  </Typography>
-                  <Typography sx={{ ml: 2, flex: 1 }} component="div">
-                    <Iconify icon="mdi:cellphone" />{profile?.customer?.cellPhone}
-                  </Typography>
-                  <Typography sx={{ ml: 2, flex: 1 }} component="div">
-                    <Iconify icon="ant-design:facebook-filled" />
-                    <Link color="inherit" underline="hover" href={profile?.customer?.facebook}>
-                      {profile?.customer?.facebook}
-                    </Link>
-                  </Typography>
+                  <List dense sx={{ width: '100%', maxWidth: 500, bgcolor: 'background.paper' }}>
+                    <ListItem sx={{ mt: -2}}>
+                      <PhoneIphoneTwoToneIcon sx={{width: 20}} />
+                      <ListItemText sx={{ml: 1}} primary={fDate(profile?.customer?.birthday)}/>
+                    </ListItem>
+                    <ListItem sx={{ mt: -2}}>
+                      <CalendarMonthTwoToneIcon sx={{width: 20}} />
+                      <ListItemText sx={{ml: 1}} primary={`${profile?.customer?.cellPhone} | ${profile?.customer?.cellPhone}`}/>
+                    </ListItem>
+                    <ListItem sx={{ mt: -2.2, mb: -.5}}>
+                      <FacebookTwoToneIcon sx={{width: 20}}/>
+                      <ListItemText sx={{ml: 1}} href={profile?.customer?.facebook} primary={profile?.customer?.facebook}/>
+                    </ListItem>
+                  </List>
+                 
                   <Box>
                     <Iconify
                       width={40}
@@ -498,7 +518,8 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                         ))}
                       </Select>
                       </FormControl>
-                    </Typography><Grid container justify="center" sx={{ maxHeight: 460, minHeight: 460 }}>
+                    </Typography>
+                    <Grid container justify="center" sx={{ maxHeight: 460, minHeight: 460 }}>
                       <Grid xs={3.7} sx={{ mt: 1, mr: 1, ml: 1 }}>
                         <Card style={{ border: `2px solid`, boxShadow: "2.5px 5px" }} justify="center" align='center'>
                           <Typography variant="h6" sx={{ ml: 2, flex: 1 }}>
@@ -523,6 +544,32 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                           </Typography>
                         </Card>
                       </Grid>
+                      <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                        <ListItem>
+                          <ListItemAvatar>
+                            <Avatar>
+                              <ImageIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText secondary="Fecha de Pago" primary={fDate(getCurrentPaymentDate(profile?.credit?.paymentDay))} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemAvatar>
+                            <Avatar>
+                              <CalendarMonthTwoToneIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary="Work" secondary="Jan 7, 2014" />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemAvatar>
+                            <Avatar>
+                              <BeachAccessIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary="Vacation" secondary="July 20, 2014" />
+                        </ListItem>
+                      </List>
                     </Grid></> ): 
                   <Container maxWidth={false}>
                     <Grid container justifyContent="center" alignItems="center" sx={{ maxHeight: 460, minHeight:460 }} >

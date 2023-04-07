@@ -607,7 +607,7 @@ export default function ProductsPage() {
                     required
                     fullWidth
                     id="city"
-                    label="Ciudad"
+                    label="Colonia"
                     name="city"
                     autoComplete="city"
                     value={city}
@@ -620,7 +620,7 @@ export default function ProductsPage() {
                     required
                     fullWidth
                     id="town"
-                    label="Municipio/Barrio"
+                    label="Municipio / Alcaldia"
                     name="town"
                     autoComplete="town"
                     value={town}
