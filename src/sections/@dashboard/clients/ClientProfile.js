@@ -52,6 +52,7 @@ import PhoneIphoneTwoToneIcon from '@mui/icons-material/PhoneIphoneTwoTone';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentPaymentDate } from '../../../utils/calculatePaymentDay';
+import { getCreditStatus } from '../../../utils/parseEnums';
 import { PromerClient } from '../../../api/PromerClient';
 import Iconify from '../../../components/iconify';
 import { fCurrency } from '../../../utils/formatNumber';
@@ -189,32 +190,6 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
         break;
     };
     return behaviourInfo;
-  }
-
-  const getCreditStatus = (status) => {
-    const creditStatusInfo = {};
-    switch(status) {
-      case 'FINISHED': 
-        creditStatusInfo.color = 'primary';
-        creditStatusInfo.status = 'FINALIZADO';
-        break;
-      case 'ASSIGNED':
-        creditStatusInfo.color = 'success';
-        creditStatusInfo.status = 'ASIGNADO';
-        break;
-      case 'CREATED':
-        creditStatusInfo.color = 'info';
-        creditStatusInfo.status = 'CREADO';
-        break;
-      case 'CANCELADO':
-        creditStatusInfo.color = 'error';
-        creditStatusInfo.status = 'CANCELADO';
-        break;
-      default:
-        creditStatusInfo.status = '';
-        break;
-    }
-    return creditStatusInfo;
   }
 
   const findCustomerProfile = async (customerId, creditId) => {

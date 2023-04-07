@@ -3,6 +3,8 @@
 import { Accordion, AccordionDetails, AccordionSummary, Card, CardHeader, CardContent, CardActions, Button, List, ListItem, ListItemText, Typography, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useState } from 'react';
+import { getCreditStatus } from '../../../utils/parseEnums';
+import { fCurrency } from '../../../utils/formatNumber';
 
 export default function SaleCard({ title, content }){
   const [isHover, setIsHover] = useState(false);
@@ -54,7 +56,7 @@ export default function SaleCard({ title, content }){
                     Estado del crédito:
                   </Typography>
                   <Typography variant="body2">
-                    {content.credit.status}
+                    {getCreditStatus(content.credit.status).status}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -78,7 +80,7 @@ export default function SaleCard({ title, content }){
                     Estado del credito:
                   </Typography>
                   <Typography variant="body2">
-                    {content.credit.status}
+                  {getCreditStatus(content.credit.status).status}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -86,7 +88,7 @@ export default function SaleCard({ title, content }){
                     Deuda total:
                   </Typography>
                   <Typography variant="body2">
-                    {content.credit.totalDebt}
+                    {fCurrency(content.credit.totalDebt)}
                   </Typography>
                 </Grid>
                 </Grid>

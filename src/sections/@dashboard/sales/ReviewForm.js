@@ -6,6 +6,8 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Grid from '@mui/material/Grid';
 import { format } from 'date-fns';
+import { getCreditStatus, getTermType, getPaymentType } from '../../../utils/parseEnums';
+import { fCurrency } from '../../../utils/formatNumber';
 
 
 export default function Review(props) {
@@ -18,7 +20,7 @@ export default function Review(props) {
         <>
           <Grid item container direction="column" xs={12} >
               <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Resumen credito
+                Resumen Crédito
               </Typography>
               <List disablePadding>
                 <ListItem key="paymentDay" sx={{ py: 1, px: 0 }}>
@@ -35,7 +37,7 @@ export default function Review(props) {
                 </ListItem>
                 <ListItem key="termType" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Tipo de pago:"  />
-                  <Typography variant="body2">{beforeCreditCreated.termType}</Typography>
+                  <Typography variant="body2">{getTermType(beforeCreditCreated.termType)?.text}</Typography>
                 </ListItem>
                 <ListItem key="termQuantity" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Cantidad de pagos:"  />
@@ -43,7 +45,7 @@ export default function Review(props) {
                 </ListItem>
                 <ListItem key="status" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Estado del credito:"  />
-                  <Typography variant="body2">{beforeCreditCreated.status}</Typography>
+                  <Typography variant="body2">{getCreditStatus(beforeCreditCreated.status)?.status}</Typography>
                 </ListItem>
                 <ListItem key="interestRate" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Tasa de interés:"  />
@@ -51,7 +53,7 @@ export default function Review(props) {
                 </ListItem>
                 <ListItem key="totalDebt" sx={{ py: 1, px: 0 }}>
                   <ListItemText primary="Deuda total:"  />
-                  <Typography variant="body2">{beforeCreditCreated.totalDebt}</Typography>
+                  <Typography variant="body2">{fCurrency(beforeCreditCreated.totalDebt)}</Typography>
                 </ListItem>
               </List>
           </Grid>
@@ -64,12 +66,12 @@ export default function Review(props) {
   return (
     <>
       <Typography variant="h6" gutterBottom>
-        Resumen de creacion de contrato
+        Resumen Contrato
       </Typography>
       <List disablePadding>
           <ListItem key={beforeContractCreated.paymentType} sx={{ py: 1, px: 0 }}>
             <ListItemText primary="Tipo de Pago:"  />
-            <Typography variant="body2">{beforeContractCreated.paymentType}</Typography>
+            <Typography variant="body2">{getPaymentType(beforeContractCreated.paymentType).text}</Typography>
           </ListItem>
           <ListItem key={landToSell.name} sx={{ py: 1, px: 0 }}>
             <ListItemText primary="Nombre del terreno vendido:"  />
@@ -81,7 +83,7 @@ export default function Review(props) {
           </ListItem>
           <ListItem key={landToSell.price} sx={{ py: 1, px: 0 }}>
             <ListItemText primary="Precio:"  />
-            <Typography variant="body2">{landToSell.price}</Typography>
+            <Typography variant="body2">{fCurrency(landToSell.price)}</Typography>
           </ListItem>
           <ListItem key={customerToSell.name} sx={{ py: 1, px: 0 }}>
             <ListItemText primary="Nombre Cliente:"  />
