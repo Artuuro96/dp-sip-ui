@@ -1,10 +1,12 @@
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 // @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Drawer, Typography, Avatar } from '@mui/material';
 // mock
+import Cookies from 'universal-cookie';
+import Loader from "../../../components/common/Loader";
 import account from '../../../_mock/account';
 // hooks
 import useResponsive from '../../../hooks/useResponsive';
@@ -13,12 +15,14 @@ import Logo from '../../../components/logo';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
+import SvgColor from '../../../components/svg-color';
 import navConfig from './config';
 
 // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
 
+const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
 const StyledAccount = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -37,6 +41,7 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav, userInfo }) {
   const { pathname } = useLocation();
+  const [modules, setModules] = useState(null);
 
   const isDesktop = useResponsive('up', 'lg');
 
@@ -44,8 +49,16 @@ export default function Nav({ openNav, onCloseNav, userInfo }) {
     if (openNav) {
       onCloseNav();
     }
+    if (userInfo) {
+      const mod = userInfo.modules?.map((module) => ({
+        title: module.name,
+        path: module.path,
+        icon: icon(module.icon),
+      }));
+      setModules(mod);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, userInfo]);
 
   const renderContent = (
     <Scrollbar
@@ -73,7 +86,7 @@ export default function Nav({ openNav, onCloseNav, userInfo }) {
         </Link>
       </Box>
 
-      <NavSection data={navConfig} />
+      {modules ? <NavSection data={modules} /> : <Loader/>}
 
       <Box sx={{ flexGrow: 1 }} />
     </Scrollbar>

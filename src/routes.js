@@ -14,7 +14,7 @@ import SalePage from './pages/SalePage';
 
 // ----------------------------------------------------------------------
 
-export default function  Router() {
+export default function Router() {
   const routes = useRoutes([
     // {
       // element: <ProtectedRoute children = { <DashboardLayout/> } />,

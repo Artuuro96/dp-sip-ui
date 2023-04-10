@@ -1,12 +1,16 @@
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 // routes
+import Cookies from 'universal-cookie';
 import Router from './routes';
 // theme
 import ThemeProvider from './theme';
 // components
 import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
+
+const cookies = new Cookies();
+
 // ----------------------------------------------------------------------
 
 export default function App() {

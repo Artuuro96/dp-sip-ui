@@ -13,12 +13,16 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 import NewSaleDg from '../sections/@dashboard/sales/NewSaleDg';
 import SaleCard from '../sections/@dashboard/sales/SaleCard';
 import SaleCardListHeader from '../sections/@dashboard/sales/SaleListHeader';
 import Iconify from '../components/iconify/Iconify';
 import { PromerClient } from '../api/PromerClient';
 import Loader from '../components/common/Loader';
+import { AcmaClient } from '../api/AcmaClient';
+import AlertMessage from '../components/common/AlertMessage';
 
 
 export default function SalePage() {
@@ -28,10 +32,35 @@ export default function SalePage() {
   const [pages, setPages] = useState(1);
   const [totalContract, setTotalContract] = useState(0);
   const [defaultLimitResults, setDefaultLimitResults] = useState(10);
-
   const [openSaleDg, setOpenSaleDg] = useState(false);
-
   const [searchText, setSearchText] = useState('');
+  const [alertProps, setAlertProps] = useState({
+    show: false
+  })
+  const acmaClient = new AcmaClient();
+  const cookies = new Cookies();
+  const navigate = useNavigate();
+
+  const handleError = async(error)=> {
+    const response = error?.response;
+
+    if (response.status === 401 && cookies.get('refresh_jwt')) {
+      await acmaClient.refresh().catch(error => { throw error });
+      window.location.reload();
+      setLoading(false);
+    }
+
+    if (response.status === 401 && !cookies.get('refresh_jwt')) {
+      setAlertProps({
+        show: true,
+        message: 'Tu sesión ha caducado, por favor inica sesión de nuevo',
+        type: 'warning'
+      })
+      setTimeout(() => {
+        navigate('/login');
+      }, 3500)
+    }
+  }
 
   useEffect(() => {
     findAllContracts();
@@ -43,6 +72,7 @@ export default function SalePage() {
 
   const findAllContracts = async () => {
     const promerClient = new PromerClient();
+    setLoading(true);
     try {
       const res = await promerClient.findAllContracts({
         limit: defaultLimitResults,
@@ -53,8 +83,15 @@ export default function SalePage() {
       setActualPage(res.data.page)
       setPages(res.data.pages)
       setTotalContract(res.data.total)
+      setLoading(false)
     } catch (error) {
-      console.error(error);
+      const statusCode = error.response?.status;
+      if (statusCode === 401 && cookies.get('refresh_jwt')) {
+        await acmaClient.refresh().catch(error => { throw error });
+        window.location.reload();
+        setLoading(false);
+      }
+      await handleError(error);
     }
   }
 
