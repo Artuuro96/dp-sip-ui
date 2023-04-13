@@ -1,5 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useState, useEffect  } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 // @mui
 import { 
   Box,
@@ -33,12 +35,16 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { isNil } from 'lodash';
+import Cookies from 'universal-cookie';
 import Loader from '../components/common/Loader';
 import Iconify from '../components/iconify/Iconify'
 import { PromerClient } from '../api/PromerClient';
+import { AcmaClient } from '../api/AcmaClient';
 // components
 import { LandList } from '../sections/@dashboard/products';
 // mock
+
+import AlertMessage from '../components/common/AlertMessage';
 
 // ----------------------------------------------------------------------
 
@@ -59,7 +65,9 @@ export default function ProductsPage() {
   const [pages, setPages] = useState(1);
   const [totalLands, setTotalLands] = useState(0);
   const [defaultLimitResults, setDefaultLimitResults] = useState(10);
-
+  const [alertProps, setAlertProps] = useState({
+    show: false
+  });
   const [searchText, setSearchText] = useState('');
 
   // Land
@@ -79,6 +87,10 @@ export default function ProductsPage() {
   const [number, setNumber] = useState("");
   const [zip, setZip] = useState("");
 
+  const acmaClient = new AcmaClient();
+  const cookies = new Cookies();
+  const navigate = useNavigate();
+
   const fileTypeImport = 'xlsx';
   const statusOptions = [
     { value: 'DISPONIBLE', label: 'DISPONIBLE' },
@@ -91,6 +103,27 @@ export default function ProductsPage() {
     { value: 'AFECTADO', label: 'AFECTADO' },
     { value: 'BAJA', label: 'BAJA' },
   ];
+
+  const handleError = async(error)=> {
+    const response = error?.response;
+
+    if (response.status === 401 && cookies.get('refresh_jwt')) {
+      await acmaClient.refresh().catch(error => { throw error });
+      window.location.reload();
+      setLoading(false);
+    }
+
+    if (response.status === 401 && !cookies.get('refresh_jwt')) {
+      setAlertProps({
+        show: true,
+        message: 'Tu sesión ha caducado, por favor inica sesión de nuevo',
+        type: 'warning'
+      })
+      setTimeout(() => {
+        navigate('/login');
+      }, 3500)
+    }
+  }
 
   const handleSearch = (event) => {
     setSearchText(event.target.value);
@@ -114,7 +147,7 @@ export default function ProductsPage() {
         setTotalLands(res.data.total)
       }
     } catch (error) {
-      console.error(error);
+      await handleError(error);
     }
   }
 
@@ -187,6 +220,7 @@ export default function ProductsPage() {
       setTotalLands(res.data.total)
     } catch (error) {
       console.error(error);
+      await handleError(error);
     }
   }
 
@@ -207,6 +241,7 @@ export default function ProductsPage() {
     } catch (error) {
       console.error(error);
       setLoading(false);
+      await handleError(error);
     }
     
   }
@@ -231,6 +266,7 @@ export default function ProductsPage() {
       console.error(error);
       setLoading(false);
       closeImportDg(event);
+      await handleError(error);
     }
   }
 
@@ -456,7 +492,7 @@ export default function ProductsPage() {
       <Helmet>
         <title> Promer | Terrenos </title>
       </Helmet>
-
+      <AlertMessage alertProps={alertProps}/>
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
@@ -478,7 +514,7 @@ export default function ProductsPage() {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Nueva importacion
+            Nueva importación
           </DialogTitle>
           <Divider />
           <DialogContent>

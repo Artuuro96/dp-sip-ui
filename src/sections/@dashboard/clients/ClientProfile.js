@@ -494,7 +494,10 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                       </Select>
                       </FormControl>
                     </Typography>
-                    <Grid container justify="center" sx={{ maxHeight: 460, minHeight: 460 }}>
+                    <Typography variant="h6" sx={{ ml: 55, mt: -5, flex: 1 }}>
+                      Fecha de Pago: {fDate(getCurrentPaymentDate(profile?.credit?.paymentDay))}
+                    </Typography>
+                    <Grid container justify="center" sx={{ maxHeight: 460, minHeight: 460, mt: 5 }}>
                       <Grid xs={3.7} sx={{ mt: 1, mr: 1, ml: 1 }}>
                         <Card style={{ border: `2px solid`, boxShadow: "2.5px 5px" }} justify="center" align='center'>
                           <Typography variant="h6" sx={{ ml: 2, flex: 1 }}>
@@ -519,32 +522,6 @@ export default function ClientProfile({ open, handleCloseDg, customerProfile, cr
                           </Typography>
                         </Card>
                       </Grid>
-                      <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                        <ListItem>
-                          <ListItemAvatar>
-                            <Avatar>
-                              <ImageIcon />
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText secondary="Fecha de Pago" primary={fDate(getCurrentPaymentDate(profile?.credit?.paymentDay))} />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemAvatar>
-                            <Avatar>
-                              <CalendarMonthTwoToneIcon />
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText primary="Work" secondary="Jan 7, 2014" />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemAvatar>
-                            <Avatar>
-                              <BeachAccessIcon />
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText primary="Vacation" secondary="July 20, 2014" />
-                        </ListItem>
-                      </List>
                     </Grid></> ): 
                   <Container maxWidth={false}>
                     <Grid container justifyContent="center" alignItems="center" sx={{ maxHeight: 460, minHeight:460 }} >

@@ -83,7 +83,7 @@ export default function CustomerPage() {
   const [updateDg, setUpdateDg] = useState(false);
   const [alertProps, setAlertProps] = useState({
     show: false
-  })
+  });
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');

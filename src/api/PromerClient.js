@@ -8,7 +8,7 @@ export class PromerClient {
     this.cookies = new Cookies();
     const token = this.cookies.get('jwt')
     this.axios = axios.create({
-      baseURL: 'http://localhost:3001/v1',
+      baseURL: 'https://api.grupopromer.com/v1',
       headers: { 'Authorization': `Bearer ${token}`}
     });;
   }
@@ -154,6 +154,16 @@ export class PromerClient {
     try {
       const response = await this.axios.post('/payment', payment);
       return response?.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsSales(){
+    try {
+      const response = await this.axios.get(`/analytics/sales`);
+      return response.data[0];
     } catch (error) {
       console.error(error);
       throw error;

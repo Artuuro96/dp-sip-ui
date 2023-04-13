@@ -5,6 +5,10 @@ import { Box, List, ListItemText } from '@mui/material';
 //
 import { alpha } from '@mui/material/styles';
 import { StyledNavItem, StyledNavItemIcon } from './styles';
+import SvgColor from '../svg-color';
+
+
+const fIcon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
 
 // ----------------------------------------------------------------------
 
@@ -17,7 +21,7 @@ export default function NavSection({ data = [], ...other }) {
     <Box {...other}>
       <List disablePadding sx={{ p: 1 }}>
         {data.map((item) => (
-          <NavItem key={item.title} item={item} />
+          <NavItem key={item.name} item={item} />
         ))}
       </List>
     </Box>
@@ -31,7 +35,7 @@ NavItem.propTypes = {
 };
 
 function NavItem({ item }) {
-  const { title, path, icon, info } = item;
+  const { name, path, icon, info } = item;
   
   return (
     <StyledNavItem
@@ -47,9 +51,9 @@ function NavItem({ item }) {
       }}
       
     >
-      <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
+      <StyledNavItemIcon>{fIcon(icon)}</StyledNavItemIcon>
 
-      <ListItemText sx={{ color: 'white' }} disableTypography primary={title} />
+      <ListItemText sx={{ color: 'white' }} disableTypography primary={name} />
 
       {info && info}
     </StyledNavItem>
